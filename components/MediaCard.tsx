@@ -12,7 +12,7 @@ type MediaCardProps = {
 
 export default function MediaCard({ id, title, posterUrl, mediaType, className = '' }: MediaCardProps) {
   return (
-    <div className={`${className} card-glass rounded-lg overflow-hidden relative group`}>
+    <div className={`${className} card-glass rounded-lg overflow-hidden relative group transition-transform duration-300 hover:scale-[1.01]`}>
       <div className="relative w-full aspect-[2/3]">
         {posterUrl ? (
           <Image 

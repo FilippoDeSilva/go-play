@@ -57,7 +57,7 @@ export default async function GenresPage() {
             key={genre.id} 
             id={genre.id} 
             name={genre.name} 
-            className="w-full"
+            className="w-full hover:scale-[1.01]"
           />
         ))}
       </div>
