@@ -48,7 +48,7 @@ export default async function Page({ params }: { params: Params }) {
           </div>
 
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold mb-2 text-gray-900 dark:text-slate-300">{movie.title}</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold mb-2 text-black dark:text-slate-300">{movie.title}</h1>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 text-sm text-gray-900 dark:text-slate-300 mb-4">
               <div>{movie.release_date}</div>
@@ -57,7 +57,7 @@ export default async function Page({ params }: { params: Params }) {
               <div className="hidden sm:block">•</div>
               <div className="flex flex-wrap gap-2">
                 {(movie.genres || []).map((g:{name:string}) => (
-                  <span key={g.name} className="text-xs px-2 py-1 rounded-full bg-slate-200/60 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200">{g.name}</span>
+                  <span key={g.name} className="text-xs px-2 py-1 rounded-full bg-slate-200/60 dark:bg-slate-700/60 text-slate-900 dark:text-slate-200">{g.name}</span>
                 ))}
               </div>
             </div>
