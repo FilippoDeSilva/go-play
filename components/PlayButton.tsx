@@ -3,7 +3,13 @@
 import React, { useState } from "react";
 import { Loader2, Play, X } from "lucide-react";
 
-type Props = { tmdbId: number; className?: string };
+type Props = { 
+  tmdbId: number; 
+  className?: string;
+  mediaType?: 'movie' | 'tv';
+  seasonNumber?: number;
+  episodeNumber?: number;
+};
 
 function addAutoplay(url: string) {
   try {
@@ -18,17 +24,32 @@ function addAutoplay(url: string) {
 
 
 
-export default function PlayButton({ tmdbId, className }: Props) {
+export default function PlayButton({ 
+  tmdbId, 
+  className, 
+  mediaType = 'movie',
+  seasonNumber,
+  episodeNumber 
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-
   async function handleOpenEmbed() {
     setError(null);
     try {
       setLoading(true);
-      const res = await fetch(`/api/play?type=movie&tmdbId=${tmdbId}`);
+      const params = new URLSearchParams({
+        type: mediaType || 'movie',
+        tmdbId: tmdbId.toString()
+      });
+
+      if (mediaType === 'tv') {
+        if (seasonNumber) params.append('season', seasonNumber.toString());
+        if (episodeNumber) params.append('episode', episodeNumber.toString());
+      }
+
+      const res = await fetch(`/api/play?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to request player");
       const data = await res.json();
       if (!data?.url) throw new Error("No player URL returned");

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { Moon, Sun, Search, Menu, X } from 'lucide-react';
@@ -15,6 +15,7 @@ export default function Header() {
   const router = useRouter();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const currentTheme = resolvedTheme || theme;
+  const { id } = useParams();
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -97,32 +98,30 @@ export default function Header() {
         </form>
 
         <div className="hidden md:flex items-center gap-3">
-          <div className="relative" ref={dropdownRef} data-genres-dropdown>
-            <button
-              aria-expanded={genresOpen}
-              aria-haspopup="menu"
-              onClick={() => setGenresOpen(v => !v)}
-              className="px-3 py-1 text-sm rounded-md bg-gray-50/70 dark:bg-gray-800/70 hover:shadow-sm cursor-pointer"
+          <div className="hidden md:flex items-center space-x-4">
+            <Link href="/" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+              Home
+            </Link>
+            <Link href={`/movies/${id}`} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+              Movies
+            </Link>
+            <Link 
+              href="/tv" 
+              className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
             >
-              Genres ▾
-            </button>
-            {genresOpen && (
-              <div
-                id="genres-menu"
-                role="menu"
-                aria-label="Genres"
-                className={`absolute right-0 mt-2 w-64 max-h-72 overflow-auto rounded bg-white dark:bg-slate-900 shadow border border-gray-100 dark:border-gray-800 z-50 transform transition duration-150 origin-top-right ${genresOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-                {genres.length === 0 ? (
-                  <div className="p-3 text-sm text-gray-500">Loading…</div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-1 p-2">
-                    {genres.map(g => (
-                      <Link key={g.id} href={`/genres/${g.id}`} role="menuitem" className="text-xs px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800">{g.name}</Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+              TV Shows
+            </Link>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setGenresOpen(!genresOpen)}
+                className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center"
+              >
+                Genres
+                <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -155,7 +154,21 @@ export default function Header() {
             <nav className="flex flex-col gap-2">
               <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
                 <h3 className="px-3 py-2 text-xs font-semibold text-gray-500">Genres</h3>
-                <div className="flex flex-wrap gap-2 px-2">
+                <div className="md:hidden flex flex-col space-y-2">
+                  <Link
+                    href="/"
+                    className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Home
+                  </Link>
+                  <Link
+                    href="/tv"
+                    className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    TV Shows
+                  </Link>
                   {genres.length === 0 ? (
                     <div className="text-xs text-gray-400 px-3 py-1">Loading…</div>
                   ) : (
