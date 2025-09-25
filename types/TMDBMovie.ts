@@ -15,4 +15,5 @@ export type Movie = {
   release_date?: string;
   first_air_date?: string;
   vote_average?: number;
+  media_type?: 'movie' | 'tv';
 };

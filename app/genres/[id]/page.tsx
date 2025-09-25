@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+import MediaCard from '@/components/MediaCard';
 
 type Props = { params: { id: string } };
 type MediaResult = { id: number; title?: string; name?: string; poster_path?: string; media_type?: string };
@@ -10,12 +10,28 @@ export default async function GenrePage({ params }: Props) {
   const base = process.env.TMDB_API_URL;
   if (!base) return <div className="p-6">TMDB API not configured.</div>;
 
+  // Fetch genre name
+  const genreRes = await fetch(`${base}/genre/movie/list?language=en-US`, {
+    headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` },
+    cache: 'no-store'
+  });
+  const genreData = await genreRes.json();
+  const genreName = genreData.genres?.find((g: any) => g.id === Number(id))?.name || 'Genre';
+
   // Fetch movies and tv by genre id
   const [moviesRes, tvRes, animeRes] = await Promise.all([
-    fetch(`${base}/discover/movie?with_genres=${id}&language=en-US&page=1`, { headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` }, cache: 'no-store' }),
-    fetch(`${base}/discover/tv?with_genres=${id}&language=en-US&page=1`, { headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` }, cache: 'no-store' }),
-    // approximate anime by searching keyword 'anime'
-    fetch(`${base}/search/multi?query=anime&language=en-US&page=1`, { headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` }, cache: 'no-store' }),
+    fetch(`${base}/discover/movie?with_genres=${id}&language=en-US&page=1&sort_by=popularity.desc`, { 
+      headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` }, 
+      cache: 'no-store' 
+    }),
+    fetch(`${base}/discover/tv?with_genres=${id}&language=en-US&page=1&sort_by=popularity.desc`, { 
+      headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` }, 
+      cache: 'no-store' 
+    }),
+    fetch(`${base}/search/multi?query=anime&with_genres=${id}&language=en-US&page=1`, { 
+      headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` }, 
+      cache: 'no-store' 
+    }),
   ]);
 
   const moviesJson = moviesRes.ok ? await moviesRes.json() : { results: [] };
@@ -24,60 +40,77 @@ export default async function GenrePage({ params }: Props) {
 
   const imageBase = process.env.TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p/w500';
 
-  const mapPoster = (item: MediaResult) => ({
+  const mapPoster = (item: MediaResult, type: 'movie' | 'tv' | 'anime' = 'movie') => ({
     id: item.id,
     title: (item.title || item.name || '').toString(),
     poster_url: item.poster_path ? `${imageBase}${item.poster_path}` : null,
-    media_type: item.media_type || 'movie',
+    media_type: type,
   });
 
   const movies = (moviesJson.results || []) as MediaResult[];
   const tv = (tvJson.results || []) as MediaResult[];
   const animeRaw = (animeJson.results || []) as MediaResult[];
 
-  const moviesMapped: MappedMedia[] = movies.map(mapPoster);
-  const tvMapped: MappedMedia[] = tv.map(mapPoster);
-  const animeMapped: MappedMedia[] = animeRaw.filter((x) => x.media_type !== 'person').map(mapPoster);
+  const moviesMapped = movies.map(m => mapPoster(m, 'movie'));
+  const tvMapped = tv.map(m => mapPoster({ ...m, media_type: 'tv' }, 'tv'));
+  const animeMapped = animeRaw
+    .filter((x) => x.media_type !== 'person')
+    .map(m => mapPoster({ ...m, media_type: 'anime' }, 'anime'));
 
   return (
-    <main className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Genre {id}</h1>
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-600 mb-6">{genreName} Titles</h1>
 
-      <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Movies</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {moviesMapped.map(m => (
-            <div key={m.id} className="rounded overflow-hidden bg-white dark:bg-slate-900 shadow">
-              {m.poster_url ? <Image src={m.poster_url as string} alt={m.title} width={300} height={450} /> : <div className="h-40 bg-gray-200" />}
-              <div className="p-2 text-sm">{m.title}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {moviesMapped.length > 0 && (
+        <section className="mb-10">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Popular Movies</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {moviesMapped.map((media) => (
+              <MediaCard
+                key={`movie-${media.id}`}
+                id={media.id}
+                title={media.title}
+                posterUrl={media.poster_url}
+                mediaType={media.media_type as 'movie' | 'tv' | 'anime'}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">TV Shows</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {tvMapped.map(m => (
-            <div key={m.id} className="rounded overflow-hidden bg-white dark:bg-slate-900 shadow">
-              {m.poster_url ? <Image src={m.poster_url as string} alt={m.title} width={300} height={450} /> : <div className="h-40 bg-gray-200" />}
-              <div className="p-2 text-sm">{m.title}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {tvMapped.length > 0 && (
+        <section className="mb-10">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">TV Shows</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {tvMapped.map((media) => (
+              <MediaCard
+                key={`tv-${media.id}`}
+                id={media.id}
+                title={media.title}
+                posterUrl={media.poster_url}
+                mediaType="tv"
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Anime-ish</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {animeMapped.map(m => (
-            <div key={m.id} className="rounded overflow-hidden bg-white dark:bg-slate-900 shadow">
-              {m.poster_url ? <Image src={m.poster_url as string} alt={m.title} width={300} height={450} /> : <div className="h-40 bg-gray-200" />}
-              <div className="p-2 text-sm">{m.title}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-    </main>
+      {animeMapped.length > 0 && (
+        <section>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Anime</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {animeMapped.map((media) => (
+              <MediaCard
+                key={`anime-${media.id}`}
+                id={media.id}
+                title={media.title}
+                posterUrl={media.poster_url}
+                mediaType="anime"
+              />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   );
 }

@@ -11,7 +11,7 @@ export default function GenreCard({ id, name, className = '' }: GenreCardProps) 
   return (
     <Link 
       href={`/genres/${id}?name=${encodeURIComponent(name)}`}
-      className={`${className} group card-glass rounded-lg overflow-hidden relative h-40 flex items-center justify-center transition-all duration-300 hover:scale-105`}
+      className={`${className} group block card-glass rounded-lg overflow-hidden relative h-40 flex items-center justify-center transition-all duration-300 hover:scale-105`}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-90 group-hover:opacity-100 transition-opacity" />
       <div className="relative z-10 text-center p-4">
