@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string; seasonNumber: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string; seasonNumber: string }> }
 ) {
-  const { id, seasonNumber } = params;
+  const { id, seasonNumber } = await context.params;
   
   if (!process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN) {
     return NextResponse.json(

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, forwardRef, useImperativeHandle } from "react";
+import React, { useState, forwardRef, useImperativeHandle, useCallback } from "react";
 import { Loader2, Play, X } from "lucide-react";
 import { Media as Props } from "@/types/TMDBMovie";
 
@@ -28,7 +28,7 @@ function PlayButtonBase({
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  async function handleOpenEmbed() {
+  const handleOpenEmbed = useCallback(async () => {
     setError(null);
     try {
       setLoading(true);
@@ -74,9 +74,9 @@ function PlayButtonBase({
     } finally {
       setLoading(false);
     }
-  }
+  }, [tmdbId, media_type, seasonNumber, episodeNumber]);
 
-  useImperativeHandle(ref, () => ({ open: handleOpenEmbed }), [tmdbId, media_type, seasonNumber, episodeNumber]);
+  useImperativeHandle(ref, () => ({ open: handleOpenEmbed }), [handleOpenEmbed]);
 
   function closePlayer() {
     setPlayerUrl(null);
