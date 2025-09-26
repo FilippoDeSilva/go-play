@@ -41,6 +41,13 @@ export default async function Page({ params }: { params: Params }) {
   const recommendations = await getRecommendations(id);
   const trailer = (videos.results as Video[] || []).find((v) => v.site === 'YouTube' && v.type === 'Trailer');
   const imageBase = process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p/w780';
+  type TMDBRec = {
+    id: number;
+    poster_path: string | null;
+    title: string;
+    vote_average?: number;
+    release_date?: string;
+  };
 
   return (
     <div className="max-w-6xl mx-auto pt-18">
@@ -104,7 +111,7 @@ export default async function Page({ params }: { params: Params }) {
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">You May Also Like</h3>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-              {recommendations.results.slice(0, 6).map((m: any) => (
+              {recommendations.results.slice(0, 6).map((m: TMDBRec) => (
                 <a key={m.id} href={`/movies/${m.id}`} className="group block hover:opacity-90 transition-opacity">
                   <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 border border-gray-200/50 dark:border-gray-700/50 group-hover:border-indigo-500/50 transition-colors">
                     {m.poster_path ? (

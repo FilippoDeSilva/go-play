@@ -21,13 +21,23 @@ async function getGenres(type: 'movie' | 'tv') {
     )
 }
 
+type TMDBResult = {
+    id: number;
+    title?: string;
+    name?: string;
+    poster_path: string | null;
+    vote_average?: number;
+    release_date?: string;
+    first_air_date?: string;
+};
+
 async function getDiscover(type: 'movie' | 'tv', genreId: number) {
-    return fetchJson<{ results: any[] }>(
+    return fetchJson<{ results: TMDBResult[] }>(
         `${API}/discover/${type}?language=en-US&sort_by=popularity.desc&with_genres=${genreId}&page=1`
     )
 }
 
-function mapToMedia(item: any, media_type: 'movie' | 'tv') {
+function mapToMedia(item: TMDBResult, media_type: 'movie' | 'tv') {
     return {
         id: item.id,
         title: media_type === 'movie' ? item.title : undefined,
@@ -79,7 +89,7 @@ export default async function GenreSections() {
                                 </Link>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-                                {(movieLists[idx]?.results || []).slice(0, 6).map((m: any) => (
+                                {(movieLists[idx]?.results || []).slice(0, 6).map((m: TMDBResult) => (
                                     <MediaCard key={m.id} {...mapToMedia(m, 'movie')} />
                                 ))}
                             </div>
@@ -106,7 +116,7 @@ export default async function GenreSections() {
                                 </Link>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-                                {(tvLists[idx]?.results || []).slice(0, 6).map((t: any) => (
+                                {(tvLists[idx]?.results || []).slice(0, 6).map((t: TMDBResult) => (
                                     <MediaCard key={t.id} {...mapToMedia(t, 'tv')} />
                                 ))}
                             </div>

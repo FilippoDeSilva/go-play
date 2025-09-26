@@ -14,7 +14,7 @@ export default async function GenrePage({ params }: Props) {
     // cache: 'no-store'
   });
   const genreData = await genreRes.json();
-  const genreName = genreData.genres?.find((g: any) => g.id === Number(id))?.name || 'Genre';
+  const genreName = genreData.genres?.find((g: { id: number; name: string }) => g.id === Number(id))?.name || 'Genre';
 
   // Fetch movies, tv and anime by genre id
   const [moviesRes, tvRes] = await Promise.all([
