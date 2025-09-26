@@ -13,6 +13,7 @@ import { Episode, type EpisodeSelector as EpisodeSelectorType } from '@/types/TM
 import { cn } from '@/lib/utils';
 
 interface EpisodeSelectorProps extends EpisodeSelectorType {
+  tvId: number;
   onSelect: (seasonNumber: number, episodeNumber: number) => void;
   defaultSeason?: number;
   defaultEpisode?: number;
@@ -20,6 +21,7 @@ interface EpisodeSelectorProps extends EpisodeSelectorType {
 
 export function EpisodeSelector({
   seasons,
+  tvId,
   onSelect,
   defaultSeason = 1,
   defaultEpisode = 1,
@@ -42,7 +44,14 @@ export function EpisodeSelector({
         if (season.episodes) {
           setEpisodes(season.episodes);
         } else {
-          const res = await fetch(`/api/tv/${season.id}/season/${season.season_number}`);
+          const apiUrl = process.env.NEXT_PUBLIC_TMDB_API_URL || 'https://api.themoviedb.org/3';
+          const token = process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN || '';
+          const res = await fetch(`${apiUrl}/tv/${tvId}/season/${season.season_number}?language=en-US`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
           if (res.ok) {
             const data = await res.json();
             const seasonEpisodes: Episode[] = data.episodes || [];
@@ -65,7 +74,7 @@ export function EpisodeSelector({
     }
 
     loadEpisodes(selectedSeason);
-  }, [selectedSeason, seasons]);
+  }, [selectedSeason, seasons, tvId]);
 
   // On mount: ensure defaults, load the episodes for defaultSeason and trigger parent
   useEffect(() => {

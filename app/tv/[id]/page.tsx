@@ -216,6 +216,7 @@ function TVShowContent({ id }: { id: string }) {
             <div className="mt-4">
               <EpisodeSelector
                 seasons={sortedSeasons}
+                tvId={tvShow.id}
                 onSelect={handleEpisodeSelect}
                 defaultSeason={selectedSeason}
                 defaultEpisode={selectedEpisode}
