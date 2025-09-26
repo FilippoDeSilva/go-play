@@ -54,7 +54,7 @@ export default async function GenreSections() {
     // Fetch discover lists in parallel
     const [movieLists, tvLists] = await Promise.all([
         Promise.all(topMovieGenres.map(g => getDiscover('movie', g.id).catch(() => ({ results: [] })))),
-        Promise.all(topTvGenres.map(g => getDiscover('tv', g.id).catch(() => ({ results: [] })))),
+        Promise.all(topTvGenres.map(g => getDiscover('tv', g.id).catch(() => ({ results: [] }))))
     ])
 
     return (
@@ -62,23 +62,22 @@ export default async function GenreSections() {
             {/* Movies by Genre */}
             {topMovieGenres.length > 0 && (
                 <section className="mb-10 sm:mb-12">
-                    <h2 className="lg:pt-18 md:pt-18 text-xl sm:text-2xl font-bold mb-4 text-slate-900 dark:text-white">Movies by Genre</h2>
+                    <h2 className="lg:pt-18 md:pt-18 text-xl sm:text-2xl font-bold mb-4 text-indigo-400 dark:text-indigo-400">Movies by Genre</h2>
                     {topMovieGenres.map((g, idx) => (
                         <div key={g.id} className="mb-6 card-glass rounded-xl border border-gray-200/40 dark:border-gray-700/40 bg-white/70 dark:bg-slate-900/60 backdrop-blur-sm p-4 sm:p-5 shadow-sm">
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                                <h3 className="text-lg font-semibold text-indigo-400 dark:text-indigo-400">
                                     {g.name}
                                 </h3>
                                 <Link
                                     href={`/genres/${g.id}?name=${encodeURIComponent(g.name)}`}
                                     aria-label={`More in ${g.name}`}
-                                    className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60 dark:focus-visible:ring-indigo-400/40 rounded-md px-1"
+                                    className="flex items-center text-sm font-medium text-indigo-400 hover:text-indigo-400 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60 dark:focus-visible:ring-indigo-400/40 rounded-md px-1"
                                 >
                                     <span>More</span>
                                     <ArrowRightIcon className="w-5 h-5 ml-1" />
                                 </Link>
                             </div>
-
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                                 {(movieLists[idx]?.results || []).slice(0, 6).map((m: any) => (
                                     <MediaCard key={m.id} {...mapToMedia(m, 'movie')} />
@@ -92,22 +91,20 @@ export default async function GenreSections() {
             {/* TV Shows by Genre */}
             {topTvGenres.length > 0 && (
                 <section className="mb-4">
-                    <h2 className="text-xl sm:text-2xl font-bold mb-4 text-slate-900 dark:text-white">TV Shows by Genre</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold mb-4 text-indigo-400 dark:text-indigo-400">TV Shows by Genre</h2>
                     {topTvGenres.map((g, idx) => (
                         <div key={g.id} className="mb-6 card-glass rounded-xl border border-gray-200/40 dark:border-gray-700/40 bg-white/70 dark:bg-slate-900/60 backdrop-blur-sm p-4 sm:p-5 shadow-sm">
                             <div className="flex items-center justify-between mb-3">
-  <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-    {g.name}
-  </h3>
-  <Link
-    href={`/genres/${g.id}?name=${encodeURIComponent(g.name)}`}
-    className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-  >
-    <span>More</span>
-    <ArrowRightIcon className="w-5 h-5 ml-1" />
-  </Link>
-</div>
-
+                                <h3 className="text-lg font-semibold text-indigo-400 dark:text-indigo-400">{g.name}</h3>
+                                <Link
+                                    href={`/genres/${g.id}?name=${encodeURIComponent(g.name)}`}
+                                    aria-label={`More in ${g.name}`}
+                                    className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60 dark:focus-visible:ring-indigo-400/40 rounded-md px-1"
+                                >
+                                    <span>More</span>
+                                    <ArrowRightIcon className="w-5 h-5 ml-1" />
+                                </Link>
+                            </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                                 {(tvLists[idx]?.results || []).slice(0, 6).map((t: any) => (
                                     <MediaCard key={t.id} {...mapToMedia(t, 'tv')} />
