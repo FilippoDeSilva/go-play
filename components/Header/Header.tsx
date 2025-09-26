@@ -97,6 +97,12 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-3">
           <div className="hidden md:flex items-center space-x-4">
             <Link 
+              href="/movies" 
+              className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Movies
+            </Link>
+            <Link 
               href="/tv" 
               className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
             >

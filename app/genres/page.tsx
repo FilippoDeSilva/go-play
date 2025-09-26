@@ -5,7 +5,7 @@ export default async function GenresPage() {
   const base = process.env.NEXT_PUBLIC_TMDB_API_URL;
   if (!base) return <div className="p-6">TMDB API not configured.</div>;
 
-  const [movieRes, tvRes, animeRes] = await Promise.all([
+  const [movieRes, tvRes] = await Promise.all([
     fetch(`${base}/genre/movie/list?language=en-US`, { 
       headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` }, 
       // cache: 'no-store' 
@@ -14,17 +14,17 @@ export default async function GenresPage() {
       headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` }, 
       // cache: 'no-store' 
     }),
-    fetch(`${base}/genre/anime/list?language=en-Us`), {
-      headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`},
-      // cache: 'no-store'
-    }
+    // fetch(`${base}/genre/anime/list?language=en-Us`), {
+    //   headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`},
+    //   // cache: 'no-store'
+    // }
   ]);
 
   if (!movieRes.ok && !tvRes.ok) return <div className="p-6">Failed to load genres.</div>;
 
   const movieJson = movieRes.ok ? await movieRes.json() : { genres: [] };
   const tvJson = tvRes.ok ? await tvRes.json() : { genres: [] };
-  const animeJson = animeRes.ok ? await animeRes.json() : { genres: [] } 
+  // const animeJson = animeRes.ok ? await animeRes.json() : { genres: [] } 
 
   const map = new Map<number, { id: number; name: string; count: number }>();
   
@@ -41,7 +41,7 @@ export default async function GenresPage() {
 
   updateGenreCount(movieJson.genres || []);
   updateGenreCount(tvJson.genres || []);
-  updateGenreCount(animeJson.genres || []);
+  // updateGenreCount(animeJson.genres || []);
 
   // Convert to array and sort by count (most common first) then by name
   const allGenres = Array.from(map.values())

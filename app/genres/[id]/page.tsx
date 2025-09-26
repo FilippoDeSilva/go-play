@@ -17,7 +17,7 @@ export default async function GenrePage({ params }: Props) {
   const genreName = genreData.genres?.find((g: any) => g.id === Number(id))?.name || 'Genre';
 
   // Fetch movies, tv and anime by genre id
-  const [moviesRes, tvRes, animeRes] = await Promise.all([
+  const [moviesRes, tvRes] = await Promise.all([
     fetch(`${base}/discover/movie?with_genres=${id}&language=en-US&page=1&sort_by=popularity.desc`, { 
       headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` }, 
       // cache: 'no-store' 
@@ -26,15 +26,15 @@ export default async function GenrePage({ params }: Props) {
       headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` }, 
       // cache: 'no-store' 
     }),
-    fetch(`${base}/search/multi?query=anime&with_genres=${id}&language=en-US&page=1`, { 
-      headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` }, 
-      // cache: 'no-store' 
-    }),
+    // fetch(`${base}/search/multi?query=anime&with_genres=${id}&language=en-US&page=1`, { 
+    //   headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` }, 
+    //   // cache: 'no-store' 
+    // }),
   ]);
 
   const moviesJson = moviesRes.ok ? await moviesRes.json() : { results: [] };
   const tvJson = tvRes.ok ? await tvRes.json() : { results: [] };
-  const animeJson = animeRes.ok ? await animeRes.json() : { results: [] };
+  // const animeJson = animeRes.ok ? await animeRes.json() : { results: [] };
 
   const imageBase = process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p/w500';
 
@@ -47,13 +47,13 @@ export default async function GenrePage({ params }: Props) {
 
   const movies = (moviesJson.results || []) as MediaResult[];
   const tv = (tvJson.results || []) as MediaResult[];
-  const animeRaw = (animeJson.results || []) as MediaResult[];
+  // const animeRaw = (animeJson.results || []) as MediaResult[];
 
   const moviesMapped = movies.map(m => mapPoster(m, 'movie'));
   const tvMapped = tv.map(m => mapPoster({ ...m, media_type: 'tv' }, 'tv'));
-  const animeMapped = animeRaw
-    .filter((x) => x.media_type !== 'movie' && x.media_type === 'tv')
-    .map(m => mapPoster({ ...m, media_type: 'anime' }, 'anime'));
+  // const animeMapped = animeRaw
+  //   .filter((x) => x.media_type !== 'movie' && x.media_type === 'tv')
+  //   .map(m => mapPoster({ ...m, media_type: 'anime' }, 'anime'));
 
   return (
     <div className="container mx-auto p-6">
@@ -93,7 +93,7 @@ export default async function GenrePage({ params }: Props) {
         </section>
       )}
 
-      {animeMapped.length > 0 && (
+      {/* {animeMapped.length > 0 && (
         <section>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Anime</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -108,7 +108,7 @@ export default async function GenrePage({ params }: Props) {
             ))}
           </div>
         </section>
-      )}
+      )} */}
     </div>
   );
 }
