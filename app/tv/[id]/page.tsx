@@ -4,7 +4,7 @@ import React from 'react';
 import { Star, Play, Info } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { TVShowDetails } from '@/types/TMDBMovie';
 
@@ -103,6 +103,8 @@ function TVShowContent({ id }: { id: string }) {
   const [videos, setVideos] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  
+  const playRef = useRef<import('@/components/PlayButton').PlayButtonHandle | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -116,12 +118,7 @@ function TVShowContent({ id }: { id: string }) {
         setTvShow(showData);
         setVideos(videoData);
         
-        // Set default season to the latest one with episodes
-        const sortedSeasons = [...showData.seasons].sort((a, b) => b.season_number - a.season_number);
-        const latestSeason = sortedSeasons.find(s => s.episode_count > 0);
-        if (latestSeason) {
-          setSelectedSeason(latestSeason.season_number);
-        }
+        // Keep defaults to Season 1 / Episode 1 as requested
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to load TV show'));
       } finally {
@@ -136,6 +133,8 @@ function TVShowContent({ id }: { id: string }) {
   const handleEpisodeSelect = (seasonNumber: number, episodeNumber: number) => {
     setSelectedSeason(seasonNumber);
     setSelectedEpisode(episodeNumber);
+    // Auto-play when user selects an episode
+    playRef.current?.open();
   };
 
   if (isLoading) {
@@ -165,52 +164,25 @@ function TVShowContent({ id }: { id: string }) {
   const sortedSeasons = [...tvShow.seasons].sort((a, b) => b.season_number - a.season_number);
   
   const posterUrl = buildImageUrl(tvShow.poster_path);
-  const backdropUrl = buildImageUrl(tvShow.backdrop_path, 'original');
 
   return (
     <div className="max-w-6xl mx-auto pt-18">
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-slate-700/50 rounded-xl shadow-lg p-6">
-        {/* Backdrop Image */}
-        {backdropUrl && (
-          <div className="relative h-64 w-full mb-6 rounded-lg overflow-hidden">
-            <Image
-              src={backdropUrl}
-              alt={tvShow.name}
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent" />
-          </div>
-        )}
-
-        {/* Main Content */}
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Poster */}
-          <div className="w-full md:w-1/3 lg:w-1/4">
-            <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 shadow-md">
+      <div className="card-glass backdrop-blur-sm border border-gray-200/40 dark:border-gray-700/40 rounded-xl shadow-lg p-6">
+        <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 items-start">
+          <div className="w-full md:w-72 mx-auto">
+            <div className="rounded-lg overflow-hidden shadow-md card-glass border border-gray-200/40 dark:border-gray-700/40">
               {posterUrl ? (
-                <Image
-                  src={posterUrl}
-                  alt={tvShow.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  priority
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-700">
-                  <span className="text-slate-500 dark:text-slate-300">No poster available</span>
+                <div className="relative h-0" style={{paddingBottom: '150%'}}>
+                  <Image src={posterUrl || ''} alt={tvShow.name} fill className="object-cover" />
                 </div>
+              ) : (
+                <div className="w-full h-64 card-glass border border-gray-200/40 dark:border-gray-700/40" />
               )}
             </div>
           </div>
 
-          {/* Details */}
-          <div className="w-full md:w-2/3">
-            <h1 className="text-3xl md:text-4xl font-extrabold mb-2 text-black dark:text-slate-300">
-              {tvShow.name}
-            </h1>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-extrabold mb-2 text-black dark:text-slate-300">{tvShow.name}</h1>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 text-sm text-gray-900 dark:text-slate-300 mb-4">
               <div>{tvShow.first_air_date ? new Date(tvShow.first_air_date).getFullYear() : 'N/A'}</div>
@@ -221,84 +193,42 @@ function TVShowContent({ id }: { id: string }) {
               {tvShow.episode_run_time?.[0] && (
                 <>
                   <div className="hidden sm:block">•</div>
-                  <div>{tvShow.episode_run_time[0]}m</div>
+                  <div>{tvShow.episode_run_time[0]} min</div>
                 </>
               )}
               <div className="hidden sm:block">•</div>
               <div className="flex flex-wrap gap-2">
                 {tvShow.genres?.map((g) => (
-                  <span 
-                    key={g.id} 
-                    className="text-xs px-2 py-1 rounded-full bg-slate-200/60 dark:bg-slate-700/60 text-slate-900 dark:text-slate-200"
-                  >
-                    {g.name}
-                  </span>
+                  <span key={g.id} className="text-xs px-2 py-1 rounded-full bg-slate-200/60 dark:bg-slate-700/60 text-slate-900 dark:text-slate-200">{g.name}</span>
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center gap-3 mb-6">
-              <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
-                <Star className="h-4 w-4 fill-current" />
-                {tvShow.vote_average?.toFixed(1)}
-                <span className="text-slate-600 dark:text-slate-300 text-xs">
-                  ({tvShow.vote_count?.toLocaleString() || 0})
-                </span>
-              </span>
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-6">{tvShow.overview || 'No overview available.'}</p>
+
+            <div className="flex items-center gap-3">
+              <PlayButton ref={playRef} tmdbId={tvShow.id} media_type='tv' seasonNumber={selectedSeason} episodeNumber={selectedEpisode} className="px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:brightness-110" />
+              <a href={`https://www.themoviedb.org/tv/${tvShow.id}/season/${selectedSeason}/episode/${selectedEpisode}`} target="_blank" rel="noopener noreferrer" className="text-sm px-3 py-2 border rounded-md text-slate-700 dark:text-slate-200 border-gray-200/60 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">Details</a>
+              <a href={`https://www.themoviedb.org/tv/${tvShow.id}`} target="_blank" rel="noopener noreferrer" className="text-sm px-3 py-2 border rounded-md text-slate-700 dark:text-slate-200 border-gray-200/60 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">View on TMDB</a>
             </div>
 
-            <p className="text-slate-800 dark:text-slate-200 leading-relaxed mb-6">
-              {tvShow.overview || 'No overview available.'}
-            </p>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <PlayButton 
-                  tmdbId={tvShow.id}
-                  media_type="tv"
-                  seasonNumber={selectedSeason}
-                  episodeNumber={selectedEpisode}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:brightness-110" 
-                />
-                <a 
-                  href={`https://www.themoviedb.org/tv/${tvShow.id}/season/${selectedSeason}/episode/${selectedEpisode}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm px-3 py-2 border rounded-md text-slate-700 dark:text-slate-200 border-gray-200/60 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer flex items-center gap-1"
-                >
-                  <Info className="h-4 w-4" />
-                  <span>Details</span>
-                </a>
-              </div>
-              
-              <div className="w-full">
-                {sortedSeasons && sortedSeasons.length > 0 && (
-                  <EpisodeSelector 
-                    seasons={sortedSeasons} 
-                    onSelect={handleEpisodeSelect}
-                    defaultSeason={selectedSeason}
-                    defaultEpisode={selectedEpisode}
-                  />
-                )}
-              </div>
-              
-              <a 
-                href={`https://www.themoviedb.org/tv/${tvShow.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block text-sm px-3 py-2 border rounded-md text-slate-700 dark:text-slate-200 border-gray-200/60 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                View on TMDB
-              </a>
+            {/* Season & Episode Selectors (always visible; column on small, row on larger screens) */}
+            <div className="mt-4">
+              <EpisodeSelector
+                seasons={sortedSeasons}
+                onSelect={handleEpisodeSelect}
+                defaultSeason={selectedSeason}
+                defaultEpisode={selectedEpisode}
+              />
             </div>
           </div>
         </div>
 
         {/* Seasons */}
         {tvShow.seasons?.length > 0 && (
-          <div className="mt-12">
+          <div className="mt-10 sm:mt-12">
             <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">Seasons</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               {sortedSeasons
                 .filter((season) => season.season_number > 0)
                 .map((season) => {
@@ -349,7 +279,7 @@ function TVShowContent({ id }: { id: string }) {
 
         {/* Trailer */}
         {trailer?.key && (
-          <div className="mt-12">
+          <div className="mt-10 sm:mt-12">
             <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-white">Trailer</h2>
             <div className="aspect-video rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-900 border border-gray-200/50 dark:border-gray-700/50">
               <iframe
@@ -365,7 +295,7 @@ function TVShowContent({ id }: { id: string }) {
 
         {/* Recommendations */}
         {tvShow.recommendations?.results && tvShow.recommendations.results.length > 0 && (
-          <div className="mt-12">
+          <div className="mt-10 sm:mt-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">You May Also Like</h2>
               <Link 
@@ -375,7 +305,7 @@ function TVShowContent({ id }: { id: string }) {
                 View All
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               {tvShow.recommendations.results.slice(0, 6).map((show) => (
                 <Link 
                   key={show.id}
@@ -423,8 +353,8 @@ function TVShowContent({ id }: { id: string }) {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
   );
 }
 

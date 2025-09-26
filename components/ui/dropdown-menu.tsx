@@ -1,21 +1,58 @@
-import React from 'react'
+import * as React from "react";
+import * as DropdownPrimitive from "@radix-ui/react-dropdown-menu";
 
-export const DropdownMenu: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <div className="relative inline-block">{children}</div>
-}
+// Root
+export const DropdownMenu = DropdownPrimitive.Root;
 
-export const DropdownMenuTrigger: React.FC<{ asChild?: boolean; children: React.ReactNode }> = ({ children }) => {
-  return <>{children}</>
-}
+// Trigger
+export const DropdownMenuTrigger = DropdownPrimitive.Trigger;
 
-export const DropdownMenuContent: React.FC<{ align?: string; children: React.ReactNode }> = ({ children }) => {
-  return <div className="absolute right-0 mt-2 w-40 rounded-md bg-white dark:bg-slate-800 shadow-lg border border-gray-200/40 dark:border-gray-700/40 z-50">{children}</div>
-}
+// Portal (optional but good for overflow issues)
+export const DropdownMenuPortal = DropdownPrimitive.Portal;
 
-export const DropdownMenuItem: React.FC<React.ComponentProps<'button'>> = ({ children, ...props }) => {
+// Content with styling + animation
+export const DropdownMenuContent = React.forwardRef<
+  React.ElementRef<typeof DropdownPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DropdownPrimitive.Content>
+>(function DropdownMenuContent(
+  { className = "", sideOffset = 8, align = "end", ...props },
+  ref
+) {
   return (
-    <button {...props} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700">{children}</button>
-  )
-}
+    <DropdownMenuPortal>
+      <DropdownPrimitive.Content
+        ref={ref}
+        align={align}
+        sideOffset={sideOffset}
+        className={
+          "z-50 min-w-[10rem] overflow-hidden rounded-md border border-gray-200/40 dark:border-gray-700/40 bg-white dark:bg-slate-800 p-1 text-slate-700 dark:text-slate-200 shadow-lg ring-1 ring-black/5 dark:ring-white/5 " +
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 " +
+          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 " +
+          className
+        }
+        {...props}
+      />
+    </DropdownMenuPortal>
+  );
+});
 
-export default DropdownMenu
+// Item
+export const DropdownMenuItem = React.forwardRef<
+  React.ElementRef<typeof DropdownPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof DropdownPrimitive.Item>
+>(function DropdownMenuItem({ className = "", ...props }, ref) {
+  return (
+    <DropdownPrimitive.Item
+      ref={ref}
+      className={
+        "relative flex w-full cursor-pointer select-none items-center rounded-sm px-2.5 py-1.5 text-sm outline-none " +
+        "transition-colors focus:bg-gray-100 dark:focus:bg-slate-700 focus:text-slate-900 dark:focus:text-slate-100 " +
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50 " +
+        className
+      }
+      {...props}
+    />
+  );
+});
+
+export default DropdownMenu;

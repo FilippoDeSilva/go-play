@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { Loader2, Play, X } from "lucide-react";
 import { Media as Props } from "@/types/TMDBMovie";
 
@@ -15,13 +15,15 @@ function addAutoplay(url: string) {
   }
 }
 
-export default function PlayButton({ 
+export type PlayButtonHandle = { open: () => void };
+
+function PlayButtonBase({ 
   tmdbId, 
   className, 
   media_type = 'movie',
   seasonNumber,
   episodeNumber 
-}: Props) {
+}: Props, ref: React.Ref<PlayButtonHandle>) {
   const [loading, setLoading] = useState(false);
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +75,8 @@ export default function PlayButton({
       setLoading(false);
     }
   }
+
+  useImperativeHandle(ref, () => ({ open: handleOpenEmbed }), [tmdbId, media_type, seasonNumber, episodeNumber]);
 
   function closePlayer() {
     setPlayerUrl(null);
@@ -141,3 +145,6 @@ export default function PlayButton({
     </div>
   );
 }
+
+const PlayButton = forwardRef<PlayButtonHandle, Props>(PlayButtonBase);
+export default PlayButton;
