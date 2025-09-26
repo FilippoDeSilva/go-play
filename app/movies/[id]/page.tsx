@@ -1,38 +1,38 @@
-import React from 'react'
-import Image from 'next/image'
-import dynamic from 'next/dynamic'
-const PlayButton = dynamic(() => import('@/components/PlayButton'));
+import React from 'react';
+import Image from 'next/image';
+import dynamic from 'next/dynamic';
+import { Video } from '@/types/TMDBMovie';
 
+const PlayButton = dynamic(() => import('@/components/PlayButton'));
 type Params = { id: string }
 
 async function getMovie(id: string) {
-  const res = await fetch(`${process.env.TMDB_API_URL}/movie/${id}?language=en-US`, {
-    headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` },
+  const res = await fetch(`${process.env.NEXT_PUBLIC_TMDB_API_URL}/movie/${id}?language=en-US`, {
+    headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` },
     next: { revalidate: 3600 },
   })
   if (!res.ok) throw new Error('Failed to fetch movie')
-  return res.json()
+  return res.json();
 }
 
 async function getVideos(id: string) {
-  const res = await fetch(`${process.env.TMDB_API_URL}/movie/${id}/videos?language=en-US`, {
-    headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` },
+  const res = await fetch(`${process.env.NEXT_PUBLIC_TMDB_API_URL}/movie/${id}/videos?language=en-US`, {
+    headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` },
     next: { revalidate: 3600 },
   })
   if (!res.ok) return { results: [] }
-  return res.json()
+  return res.json();
 }
 
 export default async function Page({ params }: { params: Params }) {
-  const id = params.id
-  const movie = await getMovie(id)
-  const videos = await getVideos(id)
-  type Video = { site?: string; type?: string; key?: string; name?: string }
-  const trailer = (videos.results as Video[] || []).find((v) => v.site === 'YouTube' && v.type === 'Trailer')
-  const imageBase = process.env.TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p/w780'
+  const id = params.id;
+  const movie = await getMovie(id);
+  const videos = await getVideos(id);
+  const trailer = (videos.results as Video[] || []).find((v) => v.site === 'YouTube' && v.type === 'Trailer');
+  const imageBase = process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p/w780';
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto pt-18">
       <div className="card-glass backdrop-blur-sm border border-gray-200/40 dark:border-gray-700/40 rounded-xl shadow-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 items-start">
             <div className="w-full md:w-72 mx-auto">
@@ -65,7 +65,7 @@ export default async function Page({ params }: { params: Params }) {
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-6">{movie.overview}</p>
 
             <div className="flex items-center gap-3">
-              <PlayButton tmdbId={movie.id} className="px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:brightness-110" />
+              <PlayButton tmdbId={movie.id} media_type='movie' className="px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:brightness-110" />
               <a href={`https://www.themoviedb.org/movie/${movie.id}`} target="_blank" rel="noreferrer" className="text-sm px-3 py-2 border rounded-md text-slate-700 dark:text-slate-200 border-gray-200/60 dark:border-gray-700/60 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">View on TMDB</a>
             </div>
           </div>

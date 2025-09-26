@@ -1,157 +1,136 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useState, useRef } from "react";
-import { Movie } from "@/types/TMDBMovie";
+import Link from "next/link";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { Media as Movie } from "@/types/TMDBMovie";
 import { Loader2 } from "lucide-react";
 
+// Movie card component
+const MovieItem = React.memo(({ movie }: { movie: Movie }) => (
+  <div className="card-glass rounded-lg overflow-hidden relative group transition-transform duration-300 hover:scale-[1.01]">
+    <div className="relative w-full aspect-[2/3]">
+      {movie.poster_url ? (
+        <Image
+          src={movie.poster_url}
+          alt={movie.title || 'Movie poster'}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+          <span className="text-gray-400 dark:text-gray-500 text-sm">No image</span>
+        </div>
+      )}
+      
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent dark:from-black/60 pointer-events-none" />
+      
+      {/* Play button overlay */}
+      <Link 
+        href={`/movies/${movie.id}`}
+        aria-label={`Open ${movie.title} details`}
+        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200"
+      >
+        <div className="bg-black/60 dark:bg-black/70 p-3 rounded-full shadow-lg transform transition-transform duration-200 group-hover:scale-110">
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className="h-10 w-10 text-white" 
+            fill="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+      </Link>
+
+      {/* Media type and rating */}
+      <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
+        <div className="inline-flex items-center gap-2 px-2 py-1 text-xs bg-black/50 dark:bg-black/60 text-white rounded-full pointer-events-none">
+          <span>Movie</span>
+        </div>
+        <div className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-black/50 dark:bg-black/60 text-amber-400 font-medium rounded-full pointer-events-none">
+          <span>★</span>
+          <span>{movie.vote_average?.toFixed(1)}</span>
+        </div>
+      </div>
+
+      {/* Title and release year */}
+      <div className="absolute bottom-0 right-0 p-3 pointer-events-none">
+        <div className="text-xs text-gray-300">
+          {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
+        </div>
+      </div>
+    </div>
+  </div>
+));
+
+MovieItem.displayName = 'MovieItem';
 
 export default function MovieCard() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const mountedRef = useRef(false);
 
-  useEffect(() => {
-    let mounted = true;
-    async function LoadMovies() {
-      try {
-        const res = await fetch('/api/movies');
-        if (!res.ok) throw new Error('Failed');
-        const json = await res.json();
-        if (mounted) setMovies(json.results || []);
-      } catch {
-          console.error('Failed to load movies');
-        } finally {
-        if (mounted) setLoading(false);
+  const fetchMovies = useCallback(async () => {
+    try {
+      const res = await fetch('/api/movies');
+      if (!res.ok) throw new Error('Failed to fetch movies');
+      const json = await res.json();
+      if (mountedRef.current) {
+        setMovies(json.results || []);
+      }
+    } catch (error) {
+      console.error('Failed to load movies:', error);
+    } finally {
+      if (mountedRef.current) {
+        setLoading(false);
+        setInitialLoad(false);
       }
     }
-    LoadMovies();
-    return () => { mounted = false };
   }, []);
 
-  const [active, setActive] = useState<number | null>(null);
-  const carouselRef = useRef<HTMLDivElement | null>(null);
-  const [carouselIndex, setCarouselIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-
-  // Auto-advance interval: every 5s, advance the small-screen carousel unless paused
   useEffect(() => {
-    if (!carouselRef.current || movies.length === 0) return;
-    let idx = 0;
-    const id = setInterval(() => {
-      if (paused) return;
-      idx = (idx + 1) % movies.length;
-      setCarouselIndex(idx);
-      const el = carouselRef.current!;
-      const child = el.children[idx] as HTMLElement | undefined;
-      if (child) {
-        // center the child in the carousel viewport
-        const left = child.offsetLeft - (el.clientWidth - child.clientWidth) / 2;
-        el.scrollTo({ left, behavior: 'smooth' });
-      }
-    }, 5000);
-    return () => clearInterval(id);
-  }, [movies.length, paused]);
-
-  // When carouselIndex changes explicitly, scroll to that item
-  useEffect(() => {
-    if (!carouselRef.current) return;
-    const el = carouselRef.current;
-    const child = el.children[carouselIndex] as HTMLElement | undefined;
-    if (child) {
-      const left = child.offsetLeft - (el.clientWidth - child.clientWidth) / 2;
-      el.scrollTo({ left, behavior: 'smooth' });
+    mountedRef.current = true;
+    if (initialLoad) {
+      fetchMovies();
     }
-  }, [carouselIndex]);
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [fetchMovies, initialLoad]);
+
+  // Show loading state only on initial load
+  if (loading && movies.length === 0) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <Loader2 className="animate-spin text-gray-500 dark:text-gray-400 h-12 w-12" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-600">Popular Movies</h1>
-
-        <div className="flex items-center gap-3">
-        </div>
+      <div className="flex items-center justify-between pt-18 px-2">
+        <h1 className="text-3xl font-bold text-foreground/90 dark:text-foreground/90 mb-6 tracking-tight">
+          Popular Movies
+        </h1>
       </div>
 
-      {loading ? (
-        <Loader2 className="animate-spin mx-auto text-gray-500 dark:text-gray-400" />
-      ) : movies.length === 0 ? (
-        <p className="text-gray-500 dark:text-gray-400">No movies found.</p>
+      {movies.length === 0 ? (
+        <p className="text-center text-gray-500 dark:text-gray-400 py-12">
+          No movies found.
+        </p>
       ) : (
-        <>
-          {/* Carousel layout for small screens, grid for larger */}
-          <div
-            ref={carouselRef}
-            className="md:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-6 px-6 touch-pan-x"
-            onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => setPaused(false)}
-            onTouchStart={() => setPaused(true)}
-            onTouchEnd={() => setPaused(false)}
-          >
-            {movies.map((m: Movie) => (
-              <div key={m.id} className="snap-center flex-shrink-0 w-full card-glass rounded-lg overflow-hidden relative group">
-                <div className="relative w-full h-96">
-                  {m.poster_url ? (
-                    <Image src={m.poster_url} alt={m.title} fill className="object-fit md:object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 dark:bg-gray-700" />
-                  )}
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent dark:from-black/60 pointer-events-none" />
-
-                  {/* Play overlay: show play icon on hover/tap */}
-                  <a href={`/movies/${m.id}`} aria-label={`Open ${m.title} details`} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
-                    <div className="bg-black/60 dark:bg-black/70 p-3 rounded-full shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                  </a>
-
-                  {/* Date pill top-right (visual only) */}
-                  <div className="absolute top-3 right-3 pointer-events-none">
-                    <div className="inline-flex items-center gap-2 px-2 py-1 text-xs bg-black/50 dark:bg-black/60 text-white rounded-full">
-                      <span className="truncate">{m.release_date}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Grid for medium+ screens */}
-          <div className="hidden md:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {movies.map((m: Movie) => (
-              <div key={m.id} className="card-glass rounded-lg overflow-hidden relative group">
-                <div className="relative w-full h-96">
-                  {m.poster_url ? (
-                    <Image src={m.poster_url} alt={m.title} fill className="object-contain md:object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 dark:bg-gray-700" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent dark:from-black/50 pointer-events-none" />
-
-                  {/* Play overlay for grid card (replaces overview) */}
-                  <a href={`/movies/${m.id}`} aria-label={`Open ${m.title} details`} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
-                    <div className="bg-black/60 dark:bg-black/70 p-3 rounded-full shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                  </a>
-
-                  {/* Date pill top-right (visual only) */}
-                  <div className="absolute top-3 right-3">
-                    <div className="inline-flex items-center gap-2 px-2 py-1 text-xs bg-black/50 dark:bg-black/60 text-white rounded-full pointer-events-none">
-                      <span className="truncate">{m.release_date}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          {movies.map((movie) => (
+            <MovieItem key={movie.id} movie={movie} />
+          ))}
+        </div>
       )}
-     
     </div>
   );
 }

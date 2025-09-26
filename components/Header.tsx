@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { Moon, Sun, Search, Menu, X } from 'lucide-react';
@@ -15,7 +15,6 @@ export default function Header() {
   const router = useRouter();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const currentTheme = resolvedTheme || theme;
-  const { id } = useParams();
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -59,11 +58,9 @@ export default function Header() {
     setMobileSearchOpen(false);
     router.push(`/search?q=${encodeURIComponent(q)}`);
   }
-
-  const headerClass = `w-full transition-colors backdrop-blur sticky top-0 z-50 bg-white/80 text-slate-900 border-b border-gray-200 dark:bg-slate-900/80 dark:text-gray-100 dark:border-gray-800`;
-
+  
   return (
-    <header className={headerClass}>
+    <header className="w-full fixed transition-colors backdrop-blur top-0 z-50 bg-white/80 text-slate-900 border-b border-gray-200 dark:bg-slate-900/80 dark:text-gray-100 dark:border-gray-800">
       <div className="container mx-auto px-4 py-2 flex items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-3 shrink-0">
           <span className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-500 flex items-center justify-center text-white font-bold text-sm shadow">GP</span>
@@ -99,12 +96,6 @@ export default function Header() {
 
         <div className="hidden md:flex items-center gap-3">
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-              Home
-            </Link>
-            <Link href={`/movies/${id}`} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-              Movies
-            </Link>
             <Link 
               href="/tv" 
               className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
@@ -121,6 +112,31 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
+              
+              {genresOpen && (
+                <div className="absolute left-0 mt-2 w-[600px] max-h-[70vh] overflow-y-auto rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+                  <div className="p-4" role="menu">
+                    {genres.length === 0 ? (
+                      <div className="px-4 py-2 text-sm text-gray-500">Loading genres...</div>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-2">
+                        {genres.map((genre) => (
+                          <Link
+                            key={genre.id}
+                            href={`/genres/${genre.id}?name=${encodeURIComponent(genre.name)}`}
+                            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded whitespace-nowrap overflow-hidden text-ellipsis"
+                            role="menuitem"
+                            onClick={() => setGenresOpen(false)}
+                            title={genre.name}
+                          >
+                            {genre.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

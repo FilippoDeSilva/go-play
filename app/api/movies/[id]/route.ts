@@ -1,4 +1,5 @@
 export async function GET(req: Request, context?: unknown) {
+  
   // Next may pass params as a plain object or a Promise depending on runtime/types.
   let paramsObj: { id?: string } | undefined;
   if (context && typeof context === 'object' && 'params' in context) {
@@ -16,11 +17,11 @@ export async function GET(req: Request, context?: unknown) {
     }
   }
   const { id } = paramsObj || {};
-  const tmdbUrl = `${process.env.TMDB_API_URL}/movie/${id}/videos?language=en-US`;
+  const tmdbUrl = `${process.env.NEXT_PUBLIC_TMDB_API_URL}/movie/${id}/videos?language=en-US`;
 
   const res = await fetch(tmdbUrl, {
     headers: {
-      Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
     },
     next: { revalidate: 3600 },
   });

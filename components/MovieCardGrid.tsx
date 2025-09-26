@@ -1,10 +1,10 @@
 'use client';
 
 import Image from "next/image";
-import { Movie } from "@/types/TMDBMovie";
+import { Media } from "@/types/TMDBMovie";
 
 interface MovieCardGridProps {
-  movies: Movie[];
+  movies: Media[];
   title?: string;
   className?: string;
 }
@@ -15,20 +15,20 @@ export default function MovieCardGrid({ movies, title, className = '' }: MovieCa
   }
 
   // Helper function to get the poster URL
-  const getPosterUrl = (movie: Movie) => {
+  const getPosterUrl = (movie: Media) => {
     if (movie.poster_url) return movie.poster_url;
     if (movie.poster_path) return `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
     return null;
   };
 
   // Helper function to get the release year
-  const getReleaseYear = (movie: Movie) => {
+  const getReleaseYear = (movie: Media) => {
     const dateStr = movie.release_date || movie.first_air_date || '';
     return dateStr ? new Date(dateStr).getFullYear() : '';
   };
 
   // Helper function to get the rating percentage
-  const getRating = (movie: Movie) => {
+  const getRating = (movie: Media) => {
     if (movie.vote_average === undefined) return 'N/A';
     return `${Math.round(movie.vote_average * 10)}%`;
   };
@@ -57,7 +57,7 @@ export default function MovieCardGrid({ movies, title, className = '' }: MovieCa
                 {posterUrl ? (
                   <Image 
                     src={posterUrl} 
-                    alt={movie.title} 
+                    alt={movie.title!} 
                     fill 
                     className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"

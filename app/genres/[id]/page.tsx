@@ -1,36 +1,34 @@
 import React from 'react';
 import MediaCard from '@/components/MediaCard';
-
+import { Media as MediaResult } from '@/types/TMDBMovie';
 type Props = { params: { id: string } };
-type MediaResult = { id: number; title?: string; name?: string; poster_path?: string; media_type?: string };
-type MappedMedia = { id: number; title: string; poster_url: string | null; media_type: string };
 
 export default async function GenrePage({ params }: Props) {
-  const id = params.id;
-  const base = process.env.TMDB_API_URL;
+  const id = await params.id;
+  const base = process.env.NEXT_PUBLIC_TMDB_API_URL;
   if (!base) return <div className="p-6">TMDB API not configured.</div>;
 
   // Fetch genre name
   const genreRes = await fetch(`${base}/genre/movie/list?language=en-US`, {
-    headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` },
-    cache: 'no-store'
+    headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` },
+    // cache: 'no-store'
   });
   const genreData = await genreRes.json();
   const genreName = genreData.genres?.find((g: any) => g.id === Number(id))?.name || 'Genre';
 
-  // Fetch movies and tv by genre id
+  // Fetch movies, tv and anime by genre id
   const [moviesRes, tvRes, animeRes] = await Promise.all([
     fetch(`${base}/discover/movie?with_genres=${id}&language=en-US&page=1&sort_by=popularity.desc`, { 
-      headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` }, 
-      cache: 'no-store' 
+      headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` }, 
+      // cache: 'no-store' 
     }),
     fetch(`${base}/discover/tv?with_genres=${id}&language=en-US&page=1&sort_by=popularity.desc`, { 
-      headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` }, 
-      cache: 'no-store' 
+      headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` }, 
+      // cache: 'no-store' 
     }),
     fetch(`${base}/search/multi?query=anime&with_genres=${id}&language=en-US&page=1`, { 
-      headers: { Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}` }, 
-      cache: 'no-store' 
+      headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}` }, 
+      // cache: 'no-store' 
     }),
   ]);
 
@@ -38,7 +36,7 @@ export default async function GenrePage({ params }: Props) {
   const tvJson = tvRes.ok ? await tvRes.json() : { results: [] };
   const animeJson = animeRes.ok ? await animeRes.json() : { results: [] };
 
-  const imageBase = process.env.TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p/w500';
+  const imageBase = process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p/w500';
 
   const mapPoster = (item: MediaResult, type: 'movie' | 'tv' | 'anime' = 'movie') => ({
     id: item.id,
@@ -54,7 +52,7 @@ export default async function GenrePage({ params }: Props) {
   const moviesMapped = movies.map(m => mapPoster(m, 'movie'));
   const tvMapped = tv.map(m => mapPoster({ ...m, media_type: 'tv' }, 'tv'));
   const animeMapped = animeRaw
-    .filter((x) => x.media_type !== 'person')
+    .filter((x) => x.media_type !== 'movie' && x.media_type === 'tv')
     .map(m => mapPoster({ ...m, media_type: 'anime' }, 'anime'));
 
   return (
@@ -70,8 +68,8 @@ export default async function GenrePage({ params }: Props) {
                 key={`movie-${media.id}`}
                 id={media.id}
                 title={media.title}
-                posterUrl={media.poster_url}
-                mediaType={media.media_type as 'movie' | 'tv' | 'anime'}
+                poster_url={media.poster_url}
+                media_type={media.media_type as 'movie' }
               />
             ))}
           </div>
@@ -87,8 +85,8 @@ export default async function GenrePage({ params }: Props) {
                 key={`tv-${media.id}`}
                 id={media.id}
                 title={media.title}
-                posterUrl={media.poster_url}
-                mediaType="tv"
+                poster_url={media.poster_url}
+                media_type="tv"
               />
             ))}
           </div>
@@ -104,8 +102,8 @@ export default async function GenrePage({ params }: Props) {
                 key={`anime-${media.id}`}
                 id={media.id}
                 title={media.title}
-                posterUrl={media.poster_url}
-                mediaType="anime"
+                poster_url={media.poster_url}
+                media_type="anime"
               />
             ))}
           </div>

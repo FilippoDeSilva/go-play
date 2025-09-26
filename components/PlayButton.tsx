@@ -2,14 +2,7 @@
 
 import React, { useState } from "react";
 import { Loader2, Play, X } from "lucide-react";
-
-type Props = { 
-  tmdbId: number; 
-  className?: string;
-  mediaType?: 'movie' | 'tv';
-  seasonNumber?: number;
-  episodeNumber?: number;
-};
+import { Media as Props } from "@/types/TMDBMovie";
 
 function addAutoplay(url: string) {
   try {
@@ -22,12 +15,10 @@ function addAutoplay(url: string) {
   }
 }
 
-
-
 export default function PlayButton({ 
   tmdbId, 
   className, 
-  mediaType = 'movie',
+  media_type = 'movie',
   seasonNumber,
   episodeNumber 
 }: Props) {
@@ -40,11 +31,11 @@ export default function PlayButton({
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        type: mediaType || 'movie',
-        tmdbId: tmdbId.toString()
+        type: media_type || 'movie',
+        tmdbId: tmdbId!.toString()
       });
 
-      if (mediaType === 'tv') {
+      if (media_type === 'tv') {
         if (seasonNumber) params.append('season', seasonNumber.toString());
         if (episodeNumber) params.append('episode', episodeNumber.toString());
       }
@@ -61,8 +52,8 @@ export default function PlayButton({
           'youtube.com',
           'www.youtube.com',
           'youtu.be',
-          'player.vimeo.com',
-          'vimeo.com',
+          // 'player.vimeo.com',
+          // 'vimeo.com',
           'vidlink.pro',
           'www.vidlink.pro'
         ]);

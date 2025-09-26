@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Environment Setup
 
-## Getting Started
+## Required Environment Variables
 
-First, run the development server:
+Create a `.env.local` file in the root directory with the following variables:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```env
+# TMDB API Configuration
+NEXT_PUBLIC_TMDB_ACCESS_TOKEN=<your-token>
+NEXT_PUBLIC_TMDB_API_KEY=<your-api-key>
+NEXT_PUBLIC_TMDB_API_URL=https://api.themoviedb.org/3
+NEXT_PUBLIC_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p/w500
+NEXT_PUBLIC_BASE_URL=https://vidlink.pro
+
+# Next.js Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=<your_nextauth_secret_here>
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Getting TMDB API Key
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Go to [TMDB API](https://www.themoviedb.org/settings/api)
+2. Create an account if you don't have one
+3. Request an API key
+4. Copy the API key and add it to your `.env.local` file
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## NextAuth Secret
 
-## Learn More
+Generate a secure random string for `NEXTAUTH_SECRET`. You can use the following command:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+openssl rand -base64 32
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-## Deploy on Vercel
+2. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
