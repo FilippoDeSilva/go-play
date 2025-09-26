@@ -1,6 +1,6 @@
 import React from 'react';
 import MovieCardGrid from '@/components/MediaCard/MovieCardGrid';
-
+import { SearchResult } from '@/types/TMDBMovie';
 type Props = { 
   searchParams: { q?: string } 
 };
@@ -35,7 +35,8 @@ export default async function SearchPage({ searchParams }: Props) {
   if (!res.ok) return <div className="p-6">Failed to search</div>;
   const json = await res.json();
   // Transform results to match the expected Media type
-  const results = (json.results || []).map((item: any) => ({
+
+  const results = (json.results || []).map((item: SearchResult) => ({
     id: item.id,
     title: item.title || item.name || 'Untitled',
     poster_path: item.poster_path,

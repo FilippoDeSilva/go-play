@@ -17,6 +17,20 @@ export type Media = {
   rating?: number | undefined;
 };
 
+export type SearchResult = {
+    id: number;
+    title?: string;
+    name?: string;
+    poster_path?: string | null;
+    poster_url?: string | null;
+    backdrop_path?: string | null;
+    vote_average?: number;
+    release_date?: string;
+    first_air_date?: string;
+    media_type?: 'movie' | 'tv';
+    overview?: string;
+  };
+
 export type GenreCardProps = {
   id: number;
   name: string;

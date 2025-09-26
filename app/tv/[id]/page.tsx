@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Star, Play, Info } from 'lucide-react';
+import { Star, Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense, useState, useEffect, useRef } from 'react';
@@ -43,6 +43,8 @@ async function getTVShow(id: string): Promise<TVShowDetails> {
   }
   return res.json();
 }
+
+type TMDBVideo = { site: string; type: string; key: string; name?: string };
 
 async function getVideos(id: string) {
   const apiUrl = process.env.NEXT_PUBLIC_TMDB_API_URL || 'https://api.themoviedb.org/3';
@@ -100,7 +102,7 @@ function TVShowContent({ id }: { id: string }) {
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
   const [selectedEpisode, setSelectedEpisode] = useState<number>(1);
   const [tvShow, setTvShow] = useState<TVShowDetails | null>(null);
-  const [videos, setVideos] = useState<any>(null);
+  const [videos, setVideos] = useState<{ results: TMDBVideo[] } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   
@@ -157,7 +159,7 @@ function TVShowContent({ id }: { id: string }) {
 
   // Find trailer
   const trailer = (videos?.results || []).find(
-    (v: any) => v.site === 'YouTube' && v.type === 'Trailer'
+    (v: TMDBVideo) => v.site === 'YouTube' && v.type === 'Trailer'
   );
 
   // Sort seasons by season number in descending order (newest first)
