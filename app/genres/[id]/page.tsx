@@ -1,5 +1,5 @@
 import React from 'react';
-import MediaCard from '@/components/MediaCard';
+import MediaCard from '@/components/MediaCard/MediaCard';
 import { Media as MediaResult } from '@/types/TMDBMovie';
 type Props = { params: { id: string } };
 

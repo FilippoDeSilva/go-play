@@ -1,5 +1,5 @@
 import React from 'react';
-import MediaCard from '@/components/MediaCard';
+import MediaCard from '@/components/MediaCard/MediaCard';
 import { Media as TVShow } from '@/types/TMDBMovie';
 
 export default async function TVPage() {

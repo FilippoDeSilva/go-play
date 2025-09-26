@@ -1,5 +1,5 @@
 import React from 'react';
-import GenreCard from '@/components/GenreCard';
+import GenreCard from '@/components/MediaCard/GenreCard';
 
 export default async function GenresPage() {
   const base = process.env.NEXT_PUBLIC_TMDB_API_URL;
