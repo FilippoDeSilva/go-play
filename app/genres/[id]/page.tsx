@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
 import MediaCard from '@/components/Cards/MediaCard';
-import { Button } from '@/components/ui/button';
+// Remove unused Button import
 
 type MediaType = 'movie' | 'tv';
 
@@ -16,7 +16,7 @@ interface MediaItem {
   release_date?: string;
   first_air_date?: string;
   vote_average?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface MediaSectionProps {
@@ -52,7 +52,7 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialIt
       if (!res.ok) throw new Error('Failed to fetch more items');
       
       const data = await res.json();
-      const newItems: MediaItem[] = (data.results || []).map((item: any) => ({
+      const newItems: MediaItem[] = (data.results || []).map((item: MediaItem) => ({
         id: item.id,
         title: item.title || item.name || 'Untitled',
         name: item.name,
@@ -60,8 +60,7 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialIt
         media_type: mediaType,
         release_date: item.release_date,
         first_air_date: item.first_air_date,
-        vote_average: item.vote_average,
-        ...item
+        vote_average: item.vote_average
       }));
       
       setItems(prev => [...prev, ...newItems]);
@@ -72,7 +71,7 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialIt
     } finally {
       setIsLoadingMore(false);
     }
-  }, [page, isLoadingMore, hasMore, mediaType, genreId, base]);
+  }, [page, isLoadingMore, hasMore, mediaType, genreId, base, imageBase]);
 
   const mapPoster = (item: MediaItem) => ({
     ...item,
@@ -144,19 +143,18 @@ export default function GenrePage({ params, searchParams }: { params: { id: stri
           throw new Error('Failed to fetch genre data');
         }
 
-        const processMediaItems = (items: any[], type: MediaType): MediaItem[] => 
+        const processMediaItems = (items: unknown[], type: MediaType): MediaItem[] => 
           (items || [])
-            .filter((item: any) => item?.id != null && (item?.title || item?.name))
-            .map((item: any) => ({
-              id: item.id,
+            .filter((item): item is MediaItem => 
+              typeof item === 'object' && 
+              item !== null && 
+              'id' in item && 
+              ('title' in item || 'name' in item)
+            )
+            .map((item) => ({
+              ...item,
               title: item.title || item.name || 'Untitled',
-              name: item.name,
-              poster_path: item.poster_path,
-              media_type: type,
-              release_date: item.release_date,
-              first_air_date: item.first_air_date,
-              vote_average: item.vote_average,
-              ...item
+              media_type: type
             }));
 
         const moviesData = await moviesRes.json();

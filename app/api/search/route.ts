@@ -10,8 +10,6 @@ export async function GET(req: Request) {
   if (!q) return new Response(JSON.stringify({ results: [], page: 1, total_pages: 0, total_results: 0 }), { headers: { 'Content-Type': 'application/json' } });
 
   const safeType = type === 'tv' ? 'tv' : 'movie';
-  // Request more items than needed in case we need to filter some out
-  const itemsToRequest = Math.min(limit * 2, 40); // Don't request more than 40 items at once
   const tmdbUrl = `${process.env.NEXT_PUBLIC_TMDB_API_URL}/search/${safeType}?language=en-US&page=${page}&include_adult=false&query=${encodeURIComponent(q)}`;
 
   const res = await fetch(tmdbUrl, {

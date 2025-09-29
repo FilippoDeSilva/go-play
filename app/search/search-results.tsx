@@ -1,6 +1,5 @@
 'use client';
 
-import { Suspense } from 'react';
 import SearchGrid from '@/components/Search/SearchGrid';
 
 type SearchResultsProps = {

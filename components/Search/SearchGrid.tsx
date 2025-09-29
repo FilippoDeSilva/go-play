@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import MovieCardGrid from '@/components/Cards/MovieCardGrid';
 import { Media } from '@/types/TMDBMovie';
-import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
 
 // Skeleton card component for loading state

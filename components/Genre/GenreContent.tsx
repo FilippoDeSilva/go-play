@@ -42,7 +42,7 @@ const GenreContent = ({ genreId, genreName }: { genreId: string; genreName: stri
       const results = data.results || [];
       
       return {
-        items: results.map((item: any) => ({
+        items: results.map((item: Media) => ({
           ...item,
           media_type: type,
           title: item.title || item.name || '',
