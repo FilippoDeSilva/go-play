@@ -67,22 +67,21 @@ export default function Header() {
           <span className="hidden sm:inline font-semibold tracking-tight">GoPlay</span>
         </Link>
 
-          <form onSubmit={onSubmit} className="hidden md:flex items-center gap-2 flex-1 max-w-xl" role="search" aria-label="Search movies">
+        <form onSubmit={onSubmit} className="hidden md:flex items-center gap-2 flex-1 max-w-xl" role="search" aria-label="Search movies">
           <div className="relative flex-1">
             <label htmlFor="header-search" className="sr-only">Search movies</label>
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300"><Search className="h-4 w-4" /></span>
             <input
               value={q}
               id="header-search"
               onChange={e => setQ(e.target.value)}
               placeholder="Search movies..."
-              className="w-full pl-9 pr-10 py-2 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/60 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
             {/* Inline right-side icon: show Clear when there's text, otherwise a submit Search icon */}
             {q ? (
               <button type="button" onClick={() => setQ('')} aria-label="Clear" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+
                 </svg>
               </button>
             ) : (

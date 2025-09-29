@@ -184,7 +184,7 @@ export default function GenrePage({ params, searchParams }: { params: { id: stri
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-6">{genreName} Genre</h1>
+      <h1 className="text-3xl font-extrabold text-indigo-500 dark:text-indigo-500 mb-6">{genreName} Genre</h1>
       
       {initialMovies.length > 0 && (
         <MediaSection 

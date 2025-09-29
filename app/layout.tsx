@@ -31,7 +31,9 @@ export default function RootLayout({
       >
         <ThemeProvider defaultTheme="dark" attribute="class" enableSystem disableTransitionOnChange>
           <Header />
-          {children}
+          <main className="pt-16 min-h-screen">
+            {children}
+          </main>
         </ThemeProvider>
       </body>
     </html>
