@@ -18,24 +18,9 @@ export default function SearchPage({ searchParams }: Props) {
     setSearchQuery(query);
   }, [searchParams.q]);
   
-  // If no search query, show popular genres
-
-  if (!searchQuery) {
-    return (
-      <main className="container mx-auto p-6 bg-transparent pt-18">
-        <div className="card-glass rounded-xl p-6 mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-slate-900 dark:text-white">Browse Popular Genres</h1>
-          <p className="text-gray-900 dark:text-gray-300 mb-6">
-            Discover movies and TV shows by genre
-          </p>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between pt-18 px-2">
+      <div className="flex items-center justify-between px-2">
         <h1 className="text-3xl font-bold text-indigo-400 dark:text-indigo-500 mb-6 tracking-tight">
           Search results for &quot;{searchQuery}&quot;
         </h1>
