@@ -119,72 +119,71 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialIt
   );
 };
 
-export default function GenrePage({ params, searchParams }: { params: { id: string }, searchParams: { name?: string } }) {
-  const [initialMovies, setInitialMovies] = useState<MediaItem[]>([]);
-  const [initialTV, setInitialTV] = useState<MediaItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export default async function GenrePage({ 
+  params, 
+  searchParams 
+}: { 
+  params: { id: string }, 
+  searchParams: { name?: string } 
+}) {
+  // Get the ID from params
+  const { id } = await params;
   const genreName = searchParams?.name || 'Genre';
   const base = process.env.NEXT_PUBLIC_TMDB_API_URL;
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!base) {
-        setIsLoading(false);
-        return;
-      }
-      
-      try {
-        setIsLoading(true);
-        const [moviesRes, tvRes] = await Promise.all([
-          fetch(`/api/genres/${params.id}/movies`),
-          fetch(`/api/genres/${params.id}/tv`)
-        ]);
-
-        if (!moviesRes.ok || !tvRes.ok) {
-          throw new Error('Failed to fetch genre data');
-        }
-
-        const processMediaItems = (items: unknown[], type: MediaType): MediaItem[] => 
-          (items || [])
-            .filter((item): item is MediaItem => 
-              typeof item === 'object' && 
-              item !== null && 
-              'id' in item && 
-              ('title' in item || 'name' in item)
-            )
-            .map((item) => ({
-              ...item,
-              title: item.title || item.name || 'Untitled',
-              media_type: type
-            }));
-
-        const moviesData = await moviesRes.json();
-        const tvData = await tvRes.json();
-
-        setInitialMovies(processMediaItems(moviesData.results || [], 'movie'));
-        setInitialTV(processMediaItems(tvData.results || [], 'tv'));
-      } catch (error) {
-        console.error('Error fetching genre data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (base) {
-      fetchData();
-    } else {
-      console.error('TMDB API URL is not configured');
-      setIsLoading(false);
-    }
-  }, [params?.id, base]);
-
-  if (isLoading) {
+  
+  if (!base) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <div className="text-red-500">Error: TMDB API URL is not configured</div>
       </div>
     );
   }
+
+  // Fetch data directly in the server component
+  const [moviesRes, tvRes] = await Promise.all([
+    fetch(`${base}/discover/movie?with_genres=${id}&sort_by=popularity.desc&language=en-US&page=1&page_size=18`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      next: { revalidate: 3600 }
+    }),
+    fetch(`${base}/discover/tv?with_genres=${id}&sort_by=popularity.desc&language=en-US&include_null_first_air_dates=false&page=1&page_size=18`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      next: { revalidate: 3600 }
+    })
+  ]);
+
+  if (!moviesRes.ok || !tvRes.ok) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-500">Error: Failed to fetch genre data</div>
+      </div>
+    );
+  }
+
+  const processMediaItems = (items: unknown[], type: MediaType): MediaItem[] => 
+    (items || [])
+      .filter((item): item is MediaItem => 
+        typeof item === 'object' && 
+        item !== null && 
+        'id' in item && 
+        ('title' in item || 'name' in item)
+      )
+      .map((item) => ({
+        ...item,
+        title: item.title || item.name || 'Untitled',
+        media_type: type
+      }));
+
+  const moviesData = await moviesRes.json();
+  const tvData = await tvRes.json();
+
+  const initialMovies = processMediaItems(moviesData.results || [], 'movie');
+  const initialTV = processMediaItems(tvData.results || [], 'tv');
 
   return (
     <div className="container mx-auto p-6">
