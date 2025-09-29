@@ -175,15 +175,15 @@ export default function Header() {
           <div className="container mx-auto p-4 flex flex-col gap-3">
             <nav className="flex flex-col gap-2">
               <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                <h3 className="px-3 py-2 text-xs font-semibold text-gray-500">Genres</h3>
+                {/* <h3 className="px-3 py-2 text-xs font-semibold text-gray-500">Genres</h3> */}
                 <div className="md:hidden flex flex-col space-y-2">
-                  <Link
+                  {/* <Link
                     href="/"
                     className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium"
                     onClick={() => setMenuOpen(false)}
                   >
                     Home
-                  </Link>
+                  </Link> */}
                   <Link
                     href="/tv"
                     className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium"
