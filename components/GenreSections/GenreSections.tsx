@@ -68,7 +68,7 @@ export default async function GenreSections() {
     ])
 
     return (
-        <div className="container mx-auto p-4 sm:p-6 pt-18">
+        <div className="container mx-auto p-4 sm:p-6 pt-20">
             {/* Movies by Genre */}
             {topMovieGenres.length > 0 && (
                 <section className="mb-10 sm:mb-12">

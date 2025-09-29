@@ -50,7 +50,7 @@ export default function MovieCard() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 pt-24">
       <div className="flex items-center justify-between pt-18 px-2">
         <h1 className="text-3xl font-bold text-indigo-400 dark:text-indigo-500 mb-6 tracking-tight">
           Popular Movies
