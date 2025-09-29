@@ -1,27 +1,42 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
-type RouteContext = {
+interface RouteParams {
   params: {
     id: string;
   };
-};
+}
 
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  { params }: RouteParams
 ) {
-  const { id } = context.params;
+  const { id } = params;
+  
+  if (!id) {
+    return NextResponse.json(
+      { error: 'Genre ID is required' },
+      { status: 400 }
+    );
+  }
+
   try {
-    // id is already extracted from context.params
-    const url = `${process.env.NEXT_PUBLIC_TMDB_API_URL}/discover/movie?with_genres=${id}&sort_by=popularity.desc&language=en-US&page=1&page_size=18`;
+    const url = new URL(`${process.env.NEXT_PUBLIC_TMDB_API_URL}/discover/movie`);
+    url.searchParams.append('with_genres', id);
+    url.searchParams.append('sort_by', 'popularity.desc');
+    url.searchParams.append('language', 'en-US');
+    url.searchParams.append('page', '1');
+    url.searchParams.append('page_size', '18');
     
-    const response = await fetch(url, {
+    const response = await fetch(url.toString(), {
       headers: {
         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 3600 } // Cache for 1 hour
+      next: { 
+        revalidate: 3600, // Cache for 1 hour
+        tags: [`genre-movies-${id}`] // Add cache tag for revalidation
+      }
     });
 
     if (!response.ok) {
