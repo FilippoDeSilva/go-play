@@ -170,8 +170,13 @@ export default function GenrePage({ params, searchParams }: { params: { id: stri
       }
     };
 
-    fetchData();
-  }, [params?.id]);
+    if (base) {
+      fetchData();
+    } else {
+      console.error('TMDB API URL is not configured');
+      setIsLoading(false);
+    }
+  }, [params?.id, base]);
 
   if (isLoading) {
     return (
