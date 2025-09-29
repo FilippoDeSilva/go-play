@@ -47,6 +47,7 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialIt
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN || ''}`,
           'Cache-Control': 'no-store'
         },
+        cache: 'no-store' as const,
       });
       
       if (!res.ok) throw new Error('Failed to fetch more items');
@@ -71,7 +72,7 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialIt
     } finally {
       setIsLoadingMore(false);
     }
-  }, [page, isLoadingMore, hasMore, mediaType, genreId, base, imageBase]);
+  }, [page, isLoadingMore, hasMore, mediaType, genreId, base]);
 
   const mapPoster = (item: MediaItem) => ({
     ...item,
@@ -122,7 +123,7 @@ export default function GenrePage({ params, searchParams }: { params: { id: stri
   const [initialMovies, setInitialMovies] = useState<MediaItem[]>([]);
   const [initialTV, setInitialTV] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [genreName, setGenreName] = useState(searchParams?.name || 'Genre');
+  const genreName = searchParams?.name || 'Genre';
   const base = process.env.NEXT_PUBLIC_TMDB_API_URL;
 
   useEffect(() => {
@@ -170,7 +171,7 @@ export default function GenrePage({ params, searchParams }: { params: { id: stri
     };
 
     fetchData();
-  }, [params?.id, searchParams?.name]);
+  }, [params?.id]);
 
   if (isLoading) {
     return (

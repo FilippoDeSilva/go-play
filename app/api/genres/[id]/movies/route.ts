@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
-interface RouteParams {
+export const dynamic = 'force-dynamic';
+
+type RouteParams = {
   params: {
     id: string;
   };
-}
+};
 
 export async function GET(
   request: NextRequest,
-  { params }: RouteParams
+  context: { params: { id: string } }
 ) {
-  const { id } = params;
+  const { id } = context.params;
   
   if (!id) {
     return NextResponse.json(

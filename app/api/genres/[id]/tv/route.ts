@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
-interface RouteParams {
+export const dynamic = 'force-dynamic';
+
+type RouteParams = {
   params: {
     id: string;
   };
-}
+};
 
 export async function GET(
   request: NextRequest,
-  { params }: RouteParams
+  context: { params: { id: string } }
 ) {
-  const { id } = params;
+  const { id } = context.params;
   
   if (!id) {
     return NextResponse.json(
@@ -28,6 +30,7 @@ export async function GET(
     url.searchParams.append('include_null_first_air_dates', 'false');
     url.searchParams.append('page', '1');
     url.searchParams.append('page_size', '18');
+    
     const response = await fetch(url.toString(), {
       headers: {
         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
