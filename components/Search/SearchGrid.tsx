@@ -6,6 +6,17 @@ import { Media } from '@/types/TMDBMovie';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
 
+// Skeleton card component for loading state
+function SkeletonCard() {
+  return (
+    <div className="animate-pulse">
+      <div className="aspect-[2/3] bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+      <div className="mt-2 h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+      <div className="mt-1 h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+    </div>
+  );
+}
+
 type Props = {
   query: string;
   type: 'movie' | 'tv';
@@ -80,7 +91,7 @@ export default function SearchGrid({
     return null;
   }
 
-  if (items.length === 0) {
+  if (items.length === 0 && !isLoadingMore) {
     return (
       <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         No {type === 'movie' ? 'movies' : 'TV shows'} found.
@@ -90,22 +101,26 @@ export default function SearchGrid({
 
   return (
     <div className={className}>
-      <MovieCardGrid movies={items} />
-      {hasMore && (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        {items.map((item) => (
+          <div key={item.id} className="h-full">
+            <MovieCardGrid movies={[item]} />
+          </div>
+        ))}
+        {isLoadingMore && 
+          Array.from({ length: itemsPerPage }).map((_, i) => (
+            <SkeletonCard key={`skeleton-${i}`} />
+          ))
+        }
+      </div>
+      {hasMore && !isLoadingMore && (
         <div className="flex justify-center mt-8">
           <Button
             onClick={loadMore}
-            disabled={isLoadingMore}
             className="flex items-center gap-2"
           >
-            {isLoadingMore ? (
-              <span>Loading...</span>
-            ) : (
-              <>
-                <span>Load More</span>
-                <ChevronDown className="w-4 h-4" />
-              </>
-            )}
+            <span>Load More</span>
+            <ChevronDown className="w-4 h-4" />
           </Button>
         </div>
       )}
