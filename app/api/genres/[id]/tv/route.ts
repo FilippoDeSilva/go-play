@@ -1,14 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'; 
 import { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
-  
+  const { id } = await context.params;
+
   if (!id) {
     return NextResponse.json(
       { error: 'Genre ID is required' },
@@ -31,8 +31,8 @@ export async function GET(
         'Content-Type': 'application/json',
       },
       next: { 
-        revalidate: 3600, // Cache for 1 hour
-        tags: [`genre-tv-${id}`] // Add cache tag for revalidation
+        revalidate: 3600,
+        tags: [`genre-tv-${id}`]
       }
     });
 
