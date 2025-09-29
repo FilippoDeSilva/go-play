@@ -1,22 +1,12 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import { SearchResult, Media } from '@/types/TMDBMovie';
-import InfiniteGrid from '@/components/Search/SearchGrid';
+import { Suspense } from 'react';
+import SearchResults from './search-results';
 
 type Props = { 
   searchParams: { q?: string } 
 };
 
 export default function SearchPage({ searchParams }: Props) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [mediaType, setMediaType] = useState<'movie' | 'tv'>('movie');
-  
-  // Initial load
-  useEffect(() => {
-    const query = searchParams.q || '';
-    setSearchQuery(query);
-  }, [searchParams.q]);
+  const searchQuery = searchParams.q || '';
   
   return (
     <div className="container mx-auto p-6">
@@ -26,30 +16,14 @@ export default function SearchPage({ searchParams }: Props) {
         </h1>
       </div>
 
-      {/* Movies Section */}
-      <section className="mb-16">
-        <div className="flex items-center justify-between mb-4 px-2">
-          <h2 className="text-3xl font-bold text-indigo-400 dark:text-indigo-500 tracking-tight">Movies</h2>
+      <Suspense fallback={
+        <div className="container mx-auto p-6 pt-24 flex justify-center items-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
         </div>
-        <InfiniteGrid 
-          query={searchQuery}
-          type="movie"
-          className="mb-8"
-          itemsPerPage={18}
-        />
-      </section>
-
-      {/* TV Shows Section */}
-      <section>
-        <div className="flex items-center justify-between mb-4 px-2">
-          <h2 className="text-3xl font-bold text-indigo-400 dark:text-indigo-500 tracking-tight">TV Shows</h2>
-        </div>
-        <InfiniteGrid 
-          query={searchQuery}
-          type="tv"
-          itemsPerPage={18}
-        />
-      </section>
+      }>
+        <SearchResults searchQuery={searchQuery} />
+      </Suspense>
     </div>
   );
 }
+

@@ -11,13 +11,15 @@ type Props = {
   type: 'movie' | 'tv';
   className?: string;
   itemsPerPage?: number;
+  onLoadComplete?: () => void;
 };
 
 export default function SearchGrid({ 
   query, 
   type, 
   className = '',
-  itemsPerPage = 18
+  itemsPerPage = 18,
+  onLoadComplete
 }: Props) {
   const [items, setItems] = useState<Media[]>([]);
   const [page, setPage] = useState<number>(1);
@@ -47,6 +49,11 @@ export default function SearchGrid({
         setPage(1);
         setTotalPages(data.total_pages || 1);
         setHasMore(1 < (data.total_pages || 1));
+        
+        // Notify parent that initial load is complete
+        if (onLoadComplete) {
+          onLoadComplete();
+        }
       } catch (error) {
         console.error('Error fetching initial items:', error);
       } finally {
