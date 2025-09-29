@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import SearchResults from './search-results';
+import { Suspense } from 'react';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -16,7 +17,9 @@ export default function SearchPage() {
       </div>
 
       {searchQuery ? (
-        <SearchResults searchQuery={searchQuery} />
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchResults searchQuery={searchQuery} />
+        </Suspense>
       ) : (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           Enter a search term to find movies and TV shows
