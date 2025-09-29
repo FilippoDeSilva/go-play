@@ -40,7 +40,7 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialIt
     setIsLoadingMore(true);
     try {
       const nextPage = page + 1;
-      const url = `${base}/discover/${mediaType}?with_genres=${genreId}&language=en-US&page=${nextPage}&sort_by=popularity.desc`;
+      const url = `${base}/discover/${mediaType}?with_genres=${genreId}&language=en-US&page=${nextPage}&page_size=18&sort_by=popularity.desc`;
       
       const res = await fetch(url, {
         headers: { 

@@ -6,8 +6,7 @@ export async function GET(
 ) {
   try {
     const { id } = params;
-    const url = `${process.env.NEXT_PUBLIC_TMDB_API_URL}/discover/tv?with_genres=${id}&sort_by=popularity.desc&language=en-US`;
-    
+    const url = `${process.env.NEXT_PUBLIC_TMDB_API_URL}/discover/tv?with_genres=${id}&sort_by=popularity.desc&language=en-US&include_null_first_air_dates=false&page=1&page_size=18`;
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,

@@ -101,27 +101,26 @@ export default function SearchGrid({
 
   return (
     <div className={className}>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {items.map((item) => (
-          <div key={item.id} className="h-full">
-            <MovieCardGrid movies={[item]} />
-          </div>
-        ))}
-        {isLoadingMore && 
-          Array.from({ length: itemsPerPage }).map((_, i) => (
+      {/* Render MovieCardGrid with all items */}
+      <MovieCardGrid movies={items} />
+      
+      {/* Show skeleton loading cards when loading more */}
+      {isLoadingMore && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-4">
+          {Array.from({ length: itemsPerPage }).map((_, i) => (
             <SkeletonCard key={`skeleton-${i}`} />
-          ))
-        }
-      </div>
+          ))}
+        </div>
+      )}
       {hasMore && !isLoadingMore && (
         <div className="flex justify-center mt-8">
-          <Button
+          <button
             onClick={loadMore}
-            className="flex items-center gap-2"
+            className="flex items-center text-sm font-medium text-indigo-400 hover:text-indigo-400 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60 dark:focus-visible:ring-indigo-400/40 rounded-md px-1"
           >
             <span>Load More</span>
-            <ChevronDown className="w-4 h-4" />
-          </Button>
+            <ChevronDown className="w-5 h-5 ml-1" />
+          </button>
         </div>
       )}
     </div>
