@@ -51,7 +51,7 @@ export default function SearchGrid({
         
         const data = await res.json();
         setItems(data.results || []);
-        setHasMore(1 < (data.total_pages || 1));
+        setHasMore(data.has_more || false);
         setPage(1);
       } catch (error) {
         console.error('Error fetching items:', error);
@@ -79,7 +79,7 @@ export default function SearchGrid({
       const data = await res.json();
       setItems(prev => [...prev, ...(data.results || [])]);
       setPage(nextPage);
-      setHasMore(nextPage < (data.total_pages || 1));
+      setHasMore(data.has_more || false);
     } catch (error) {
       console.error('Error loading more items:', error);
     } finally {
