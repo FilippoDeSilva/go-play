@@ -3,15 +3,11 @@ import { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-type RouteParams = {
-  id: string;
-};
-
 export async function GET(
   request: NextRequest,
-  { params }: { params: RouteParams }
+  context: { params: { id: string } }
 ) {
-  const { id } = params;
+  const { id } = await context.params;
   
   if (!id) {
     return NextResponse.json(
