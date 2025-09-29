@@ -5,10 +5,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
-  
+  const { id } = await context.params;
+
   if (!id) {
     return NextResponse.json(
       { error: 'Genre ID is required' },
@@ -23,15 +23,15 @@ export async function GET(
     url.searchParams.append('language', 'en-US');
     url.searchParams.append('page', '1');
     url.searchParams.append('page_size', '18');
-    
+
     const response = await fetch(url.toString(), {
       headers: {
         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      next: { 
-        revalidate: 3600, // Cache for 1 hour
-        tags: [`genre-movies-${id}`] // Add cache tag for revalidation
+      next: {
+        revalidate: 3600,
+        tags: [`genre-movies-${id}`]
       }
     });
 
