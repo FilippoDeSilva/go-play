@@ -96,7 +96,7 @@ export default function Header() {
 
         <div className="hidden md:flex items-center gap-3">
           <div className="hidden md:flex items-center space-x-4">
-            <Link 
+            {/* <Link 
               href="/movies" 
               className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
             >
@@ -107,7 +107,7 @@ export default function Header() {
               className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
             >
               TV Shows
-            </Link>
+            </Link> */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setGenresOpen(!genresOpen)}

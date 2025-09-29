@@ -82,7 +82,7 @@ export default async function GenreSections() {
                                 <Link
                                     href={`/genres/${g.id}?name=${encodeURIComponent(g.name)}`}
                                     aria-label={`More in ${g.name}`}
-                                    className="flex items-center text-sm font-medium text-indigo-400 hover:text-indigo-400 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60 dark:focus-visible:ring-indigo-400/40 rounded-md px-1"
+                                     className="px-6 bg-transparent py-3 text-base font-medium hover:text-indigo-500 dark:text-indigo-500 dark:hover:text-indigo-600 text-white rounded-lg transition-colors flex items-center gap-2 mx-auto"
                                 >
                                     <span>More</span>
                                     <ArrowRightIcon className="w-5 h-5 ml-1" />

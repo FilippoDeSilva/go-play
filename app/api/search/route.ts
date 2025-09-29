@@ -5,7 +5,7 @@ export async function GET(req: Request) {
   const q = url.searchParams.get('q') || '';
   const type = (url.searchParams.get('type') || 'movie').toLowerCase(); // 'movie' | 'tv'
   const page = parseInt(url.searchParams.get('page') || '1', 10) || 1;
-  const limit = parseInt(url.searchParams.get('limit') || '18', 10) || 18; // Default to 24 items per page
+  const limit = parseInt(url.searchParams.get('limit') || '18', 10) || 18; // Default to 18 items per page
   
   if (!q) return new Response(JSON.stringify({ results: [], page: 1, total_pages: 0, total_results: 0 }), { headers: { 'Content-Type': 'application/json' } });
 

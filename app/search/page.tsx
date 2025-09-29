@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SearchResult, Media } from '@/types/TMDBMovie';
-import InfiniteGrid from '@/components/Search/InfiniteGrid';
+import InfiniteGrid from '@/components/Search/SearchGrid';
 
 type Props = { 
   searchParams: { q?: string } 

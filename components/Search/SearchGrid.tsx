@@ -13,7 +13,7 @@ type Props = {
   itemsPerPage?: number;
 };
 
-export default function InfiniteGrid({ 
+export default function SearchGrid({ 
   query, 
   type, 
   className = '',
