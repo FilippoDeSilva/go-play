@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+
+type RouteContext = {
+  params: {
+    id: string;
+  };
+};
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: RouteContext
 ) {
+  const { id } = context.params;
   try {
-    const { id } = params;
+    // id is already extracted from context.params
     const url = `${process.env.NEXT_PUBLIC_TMDB_API_URL}/discover/movie?with_genres=${id}&sort_by=popularity.desc&language=en-US&page=1&page_size=18`;
     
     const response = await fetch(url, {

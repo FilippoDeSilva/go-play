@@ -1,6 +1,7 @@
+import { NextRequest } from 'next/server';
 import { Media } from "@/types/TMDBMovie";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const q = url.searchParams.get('q') || '';
   const type = (url.searchParams.get('type') || 'movie').toLowerCase(); // 'movie' | 'tv'
