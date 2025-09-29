@@ -16,12 +16,11 @@ const GenreContent = ({ genreId, genreName }: { genreId: string; genreName: stri
     tv: { initial: true, more: false } 
   });
   const [hasMore, setHasMore] = useState<{ [key in MediaType]: boolean }>({ movie: false, tv: false });
-  const [totalPages, setTotalPages] = useState<{ [key in MediaType]: number }>({ movie: 1, tv: 1 });
   const imageBase = process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p/w500';
 
   const fetchMedia = useCallback(async (type: MediaType, pageNum: number) => {
     const base = process.env.NEXT_PUBLIC_TMDB_API_URL;
-    if (!base) return { items: [], totalPages: 1 };
+    if (!base) return { items: [], hasMore: false };
 
     try {
       const url = new URL(
@@ -48,11 +47,11 @@ const GenreContent = ({ genreId, genreName }: { genreId: string; genreName: stri
           title: item.title || item.name || '',
           poster_url: item.poster_path ? `${imageBase}${item.poster_path}` : null,
         })),
-        totalPages: data.total_pages || 1
+        hasMore: pageNum < (data.total_pages || 1)
       };
     } catch (error) {
       console.error(`Error fetching ${type}s:`, error);
-      return { items: [], totalPages: 1 };
+      return { items: [], hasMore: false };
     }
   }, [genreId, imageBase]);
 
@@ -68,14 +67,9 @@ const GenreContent = ({ genreId, genreName }: { genreId: string; genreName: stri
         tv: tvData.items 
       });
       
-      setTotalPages({
-        movie: moviesData.totalPages,
-        tv: tvData.totalPages
-      });
-      
       setHasMore({ 
-        movie: 1 < moviesData.totalPages, 
-        tv: 1 < tvData.totalPages 
+        movie: moviesData.hasMore,
+        tv: tvData.hasMore
       });
     } catch (error) {
       console.error('Error loading initial data:', error);
@@ -97,7 +91,7 @@ const GenreContent = ({ genreId, genreName }: { genreId: string; genreName: stri
       }));
       
       const nextPage = page[type] + 1;
-      const { items: newItems, totalPages } = await fetchMedia(type, nextPage);
+      const { items: newItems, hasMore: moreItems } = await fetchMedia(type, nextPage);
       
       if (newItems.length > 0) {
         setMedia(prev => ({
@@ -112,7 +106,7 @@ const GenreContent = ({ genreId, genreName }: { genreId: string; genreName: stri
         
         setHasMore(prev => ({
           ...prev,
-          [type]: nextPage < totalPages
+          [type]: moreItems
         }));
       }
     } catch (error) {
