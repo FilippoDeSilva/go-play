@@ -1,86 +1,128 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MovieCardGrid from '@/components/Cards/MovieCardGrid';
 import { Media } from '@/types/TMDBMovie';
+import { Button } from '@/components/ui/button';
+import { ChevronDown } from 'lucide-react';
 
 type Props = {
   query: string;
   type: 'movie' | 'tv';
-  initialItems: Media[];
-  initialPage: number;
-  totalPages: number;
   className?: string;
+  itemsPerPage?: number;
 };
 
-export default function InfiniteGrid({ query, type, initialItems, initialPage, totalPages, className = '' }: Props) {
-  const [items, setItems] = React.useState<Media[]>(initialItems);
-  const [page, setPage] = React.useState<number>(initialPage);
-  const [loading, setLoading] = React.useState(false);
-  const [hasMore, setHasMore] = React.useState<boolean>(initialPage < totalPages);
-  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
+export default function InfiniteGrid({ 
+  query, 
+  type, 
+  className = '',
+  itemsPerPage = 18
+}: Props) {
+  const [items, setItems] = useState<Media[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [loading, setLoading] = useState({ initial: true, more: false });
+  const [hasMore, setHasMore] = useState<boolean>(false);
+  const [totalPages, setTotalPages] = useState<number>(1);
 
-  React.useEffect(() => {
-    setItems(initialItems);
-    setPage(initialPage);
-    setHasMore(initialPage < totalPages);
-  }, [initialItems, initialPage, totalPages]);
-
-  React.useEffect(() => {
-    if (!hasMore) return;
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const obs = new IntersectionObserver(async (entries) => {
-      const first = entries[0];
-      if (first.isIntersecting && !loading) {
-        setLoading(true);
-        try {
-          const hdrs = await (async () => {
-            // Build base from window since this is client side
-            if (typeof window !== 'undefined') return { host: window.location.host, protocol: window.location.protocol.replace(':','') };
-            return { host: '', protocol: 'https' };
-          })();
-          const protocol = hdrs.protocol || (process.env.NEXT_PUBLIC_VERCEL ? 'https' : 'http');
-          const base = protocol + '://' + (hdrs.host || '');
-          const nextPage = page + 1;
-          const url = new URL(`/api/search?q=${encodeURIComponent(query)}&type=${type}&page=${nextPage}`, base).toString();
-          const res = await fetch(url, { cache: 'no-store' });
-          if (res.ok) {
-            const json = await res.json();
-            const newItems = (json.results || []) as Media[];
-            const sorted = [...items, ...newItems].sort((a, b) => {
-              const ar = a.vote_average ?? 0;
-              const br = b.vote_average ?? 0;
-              if (br !== ar) return br - ar; // higher rating first
-              const ad = type === 'tv' ? (a.first_air_date ? new Date(a.first_air_date).getTime() : 0) : (a.release_date ? new Date(a.release_date).getTime() : 0);
-              const bd = type === 'tv' ? (b.first_air_date ? new Date(b.first_air_date).getTime() : 0) : (b.release_date ? new Date(b.release_date).getTime() : 0);
-              return bd - ad; // newer first
-            });
-            setItems(sorted);
-            setPage(nextPage);
-            setHasMore(nextPage < (json.total_pages || totalPages));
-          } else {
-            setHasMore(false);
-          }
-        } catch {
-          setHasMore(false);
-        } finally {
-          setLoading(false);
-        }
+  // Fetch initial data when query or type changes
+  useEffect(() => {
+    const fetchInitial = async () => {
+      if (!query) return;
+      
+      try {
+        setLoading(prev => ({ ...prev, initial: true }));
+        const url = new URL(
+          `/api/search?q=${encodeURIComponent(query)}&type=${type}&page=1&limit=${itemsPerPage}`,
+          window.location.origin
+        ).toString();
+        
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to fetch');
+        
+        const data = await res.json();
+        const results = data.results || [];
+        
+        setItems(results);
+        setPage(1);
+        setTotalPages(data.total_pages || 1);
+        setHasMore(1 < (data.total_pages || 1));
+      } catch (error) {
+        console.error('Error fetching initial items:', error);
+      } finally {
+        setLoading(prev => ({ ...prev, initial: false }));
       }
-    }, { rootMargin: '600px 0px' });
+    };
+    
+    fetchInitial();
+  }, [query, type, itemsPerPage]);
 
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [hasMore, loading, page, query, type, totalPages, items]);
+  const loadMore = async () => {
+    if (loading.more || !hasMore) return;
+    
+    const nextPage = page + 1;
+    
+    try {
+      setLoading(prev => ({ ...prev, more: true }));
+      
+      const url = new URL(
+        `/api/search?q=${encodeURIComponent(query)}&type=${type}&page=${nextPage}&limit=${itemsPerPage}`,
+        window.location.origin
+      ).toString();
+      
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to fetch more items');
+      
+      const data = await res.json();
+      const newItems = data.results || [];
+      
+      setItems(prev => [...prev, ...newItems]);
+      setPage(nextPage);
+      setHasMore(nextPage < (data.total_pages || 1));
+    } catch (error) {
+      console.error('Error loading more items:', error);
+    } finally {
+      setLoading(prev => ({ ...prev, more: false }));
+    }
+  };
+
+  if (loading.initial) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+        No {type === 'movie' ? 'movies' : 'TV shows'} found.
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
       <MovieCardGrid movies={items} />
-      <div ref={sentinelRef} className="h-10" />
-      {loading && (
-        <div className="py-6 text-center text-sm text-slate-500">Loading more...</div>
+      
+      {hasMore && (
+        <div className="mt-8 text-center">
+          <Button 
+            onClick={loadMore}
+            disabled={loading.more}
+            className="px-6 bg-transparent py-3 text-base font-medium hover:text-indigo-500 dark:text-indigo-500 dark:hover:text-indigo-600 text-white rounded-lg transition-colors flex items-center gap-2 mx-auto"
+          >
+            {loading.more ? 'Loading...' : `Show More ${type === 'movie' ? 'Movies' : 'TV Shows'}`}
+            <ChevronDown className="w-5 h-5" />
+          </Button>
+        </div>
+      )}
+      
+      {!hasMore && items.length > 0 && (
+        <div className="mt-8 text-center text-gray-500 dark:text-gray-400">
+          No more {type === 'movie' ? 'movies' : 'TV shows'} to show
+        </div>
       )}
     </div>
   );
