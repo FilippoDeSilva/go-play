@@ -72,7 +72,7 @@ export default async function GenreSections() {
             {/* Movies by Genre */}
             {topMovieGenres.length > 0 && (
                 <section className="mb-10 sm:mb-12">
-                    <h2 className="lg:pt-18 md:pt-18 text-xl sm:text-2xl font-bold mb-4 text-indigo-400 dark:text-indigo-400">Movies by Genre</h2>
+                    {/* <h2 className="lg:pt-18 md:pt-18 text-xl sm:text-2xl font-bold mb-4 text-indigo-400 dark:text-indigo-400">Movies by Genre</h2> */}
                     {topMovieGenres.map((g, idx) => (
                         <div key={g.id} className="mb-6 card-glass rounded-xl border border-gray-200/40 dark:border-gray-700/40 bg-white/70 dark:bg-slate-900/60 backdrop-blur-sm p-4 sm:p-5 shadow-sm">
                             <div className="flex items-center justify-between mb-3">
@@ -101,7 +101,7 @@ export default async function GenreSections() {
             {/* TV Shows by Genre */}
             {topTvGenres.length > 0 && (
                 <section className="mb-4">
-                    <h2 className="text-xl sm:text-2xl font-bold mb-4 text-indigo-400 dark:text-indigo-400">TV Shows by Genre</h2>
+                    {/* <h2 className="text-xl sm:text-2xl font-bold mb-4 text-indigo-400 dark:text-indigo-400">TV Shows by Genre</h2> */}
                     {topTvGenres.map((g, idx) => (
                         <div key={g.id} className="mb-6 card-glass rounded-xl border border-gray-200/40 dark:border-gray-700/40 bg-white/70 dark:bg-slate-900/60 backdrop-blur-sm p-4 sm:p-5 shadow-sm">
                             <div className="flex items-center justify-between mb-3">

@@ -1,44 +1,50 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { ChevronDown } from 'lucide-react';
 import MediaCard from '@/components/Cards/MediaCard';
 import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
-import { Media as MediaResult } from '@/types/TMDBMovie';
-
-type Props = { 
-  params: { id: string };
-  searchParams: { name?: string };
-};
 
 type MediaType = 'movie' | 'tv';
+
+interface MediaItem {
+  id: number;
+  title: string;
+  name?: string;
+  poster_path: string | null;
+  media_type: MediaType;
+  release_date?: string;
+  first_air_date?: string;
+  vote_average?: number;
+  [key: string]: any;
+}
 
 interface MediaSectionProps {
   title: string;
   mediaType: MediaType;
-  initialItems: any[];
+  initialItems: MediaItem[];
   genreId: string;
 }
 
 const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialItems, genreId }) => {
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState<MediaItem[]>(initialItems);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(initialItems.length >= 20);
   const base = process.env.NEXT_PUBLIC_TMDB_API_URL;
   const imageBase = process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p/w500';
 
   const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+    if (isLoadingMore || !hasMore || !base) return;
     
-    setLoading(true);
+    setIsLoadingMore(true);
     try {
       const nextPage = page + 1;
       const url = `${base}/discover/${mediaType}?with_genres=${genreId}&language=en-US&page=${nextPage}&sort_by=popularity.desc`;
       
       const res = await fetch(url, {
         headers: { 
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN || ''}`,
           'Cache-Control': 'no-store'
         },
       });
@@ -46,7 +52,17 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialIt
       if (!res.ok) throw new Error('Failed to fetch more items');
       
       const data = await res.json();
-      const newItems = data.results || [];
+      const newItems: MediaItem[] = (data.results || []).map((item: any) => ({
+        id: item.id,
+        title: item.title || item.name || 'Untitled',
+        name: item.name,
+        poster_path: item.poster_path,
+        media_type: mediaType,
+        release_date: item.release_date,
+        first_air_date: item.first_air_date,
+        vote_average: item.vote_average,
+        ...item
+      }));
       
       setItems(prev => [...prev, ...newItems]);
       setPage(nextPage);
@@ -54,13 +70,13 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialIt
     } catch (error) {
       console.error(`Error loading more ${mediaType}s:`, error);
     } finally {
-      setLoading(false);
+      setIsLoadingMore(false);
     }
-  }, [page, loading, hasMore, mediaType, genreId, base]);
+  }, [page, isLoadingMore, hasMore, mediaType, genreId, base]);
 
-  const mapPoster = (item: MediaResult) => ({
-    id: item.id,
-    title: (item.title || item.name || '').toString(),
+  const mapPoster = (item: MediaItem) => ({
+    ...item,
+    title: item.title,
     poster_url: item.poster_path ? `${imageBase}${item.poster_path}` : null,
     media_type: mediaType,
   });
@@ -68,95 +84,97 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, initialIt
   if (items.length === 0) return null;
 
   return (
-    <section className="mb-10">
+    <div className="mb-10">
       <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">{title}</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {items.map((item) => {
-          const media = mapPoster(item);
-          return (
-            <MediaCard
-              key={`${mediaType}-${media.id}`}
-              id={media.id}
-              title={media.title}
-              poster_url={media.poster_url}
-              media_type={mediaType}
-            />
-          );
-        })}
+        {items.map((item) => (
+          <MediaCard key={`${mediaType}-${item.id}`} {...mapPoster(item)} />
+        ))}
       </div>
       {hasMore && (
-        <div className="mt-4 text-center">
+        <div className="flex justify-center mt-6">
           <Button
             onClick={loadMore}
-            disabled={loading}
-            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center gap-2 mx-auto"
+            disabled={isLoadingMore}
+            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-2"
           >
-            {loading ? 'Loading...' : `Load More ${title}`}
-            {!loading && <ChevronDown className="w-4 h-4" />}
+            {isLoadingMore ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Loading...
+              </>
+            ) : (
+              <>
+                <span className="px-6 bg-transparent py-3 text-base font-medium hover:text-indigo-500 dark:text-indigo-500 dark:hover:text-indigo-600 text-white rounded-lg transition-colors flex items-center gap-2 mx-auto">Load More</span>
+                <ChevronDown className="w-4 h-4" />
+              </>
+            )}
           </Button>
         </div>
       )}
-    </section>
+    </div>
   );
 };
 
-export default function GenrePage({ params, searchParams }: Props) {
-  const [genreName, setGenreName] = useState(searchParams.name || 'Genre');
-  const [initialMovies, setInitialMovies] = useState<MediaResult[]>([]);
-  const [initialTV, setInitialTV] = useState<MediaResult[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function GenrePage({ params, searchParams }: { params: { id: string }, searchParams: { name?: string } }) {
+  const [initialMovies, setInitialMovies] = useState<MediaItem[]>([]);
+  const [initialTV, setInitialTV] = useState<MediaItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [genreName, setGenreName] = useState(searchParams?.name || 'Genre');
   const base = process.env.NEXT_PUBLIC_TMDB_API_URL;
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!base) {
+        setIsLoading(false);
+        return;
+      }
+      
       try {
-        setLoading(true);
-        
-        // Fetch genre name if not in search params
-        if (!searchParams.name) {
-          const genreRes = await fetch(`${base}/genre/movie/list?language=en-US`, {
-            headers: { 
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
-              'Cache-Control': 'no-store'
-            },
-          });
-          const genreData = await genreRes.json();
-          const name = genreData.genres?.find((g: { id: number; name: string }) => g.id === Number(params.id))?.name || 'Genre';
-          setGenreName(name);
-        }
-
-        // Fetch initial data
+        setIsLoading(true);
         const [moviesRes, tvRes] = await Promise.all([
-          fetch(`${base}/discover/movie?with_genres=${params.id}&language=en-US&page=1&sort_by=popularity.desc`, { 
-            headers: { 
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
-              'Cache-Control': 'no-store'
-            } 
-          }),
-          fetch(`${base}/discover/tv?with_genres=${params.id}&language=en-US&page=1&sort_by=popularity.desc`, { 
-            headers: { 
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
-              'Cache-Control': 'no-store'
-            } 
-          }),
+          fetch(`/api/genres/${params.id}/movies`),
+          fetch(`/api/genres/${params.id}/tv`)
         ]);
 
-        const moviesJson = moviesRes.ok ? await moviesRes.json() : { results: [] };
-        const tvJson = tvRes.ok ? await tvRes.json() : { results: [] };
+        if (!moviesRes.ok || !tvRes.ok) {
+          throw new Error('Failed to fetch genre data');
+        }
 
-        setInitialMovies(moviesJson.results || []);
-        setInitialTV(tvJson.results || []);
+        const processMediaItems = (items: any[], type: MediaType): MediaItem[] => 
+          (items || [])
+            .filter((item: any) => item?.id != null && (item?.title || item?.name))
+            .map((item: any) => ({
+              id: item.id,
+              title: item.title || item.name || 'Untitled',
+              name: item.name,
+              poster_path: item.poster_path,
+              media_type: type,
+              release_date: item.release_date,
+              first_air_date: item.first_air_date,
+              vote_average: item.vote_average,
+              ...item
+            }));
+
+        const moviesData = await moviesRes.json();
+        const tvData = await tvRes.json();
+
+        setInitialMovies(processMediaItems(moviesData.results || [], 'movie'));
+        setInitialTV(processMediaItems(tvData.results || [], 'tv'));
       } catch (error) {
         console.error('Error fetching genre data:', error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [params.id, searchParams.name, base]);
+  }, [params?.id, searchParams?.name]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
@@ -166,38 +184,25 @@ export default function GenrePage({ params, searchParams }: Props) {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-6">{genreName} Title</h1>
+      <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-6">{genreName} Genre</h1>
       
-      <MediaSection 
-        title="Popular Movies"
-        mediaType="movie"
-        initialItems={initialMovies}
-        genreId={params.id}
-      />
+      {initialMovies.length > 0 && (
+        <MediaSection 
+          title="Popular Movies"
+          mediaType="movie"
+          initialItems={initialMovies}
+          genreId={params?.id || ''}
+        />
+      )}
       
-      <MediaSection 
-        title="TV Shows"
-        mediaType="tv"
-        initialItems={initialTV}
-        genreId={params.id}
-      />
-
-      {/* {animeMapped.length > 0 && (
-        <section>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Anime</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-{{ ... }}
-              <MediaCard
-                key={`anime-${media.id}`}
-                id={media.id}
-                title={media.title}
-                poster_url={media.poster_url}
-                media_type="anime"
-              />
-            ))}
-          </div>
-        </section>
-      )} */}
+      {initialTV.length > 0 && (
+        <MediaSection 
+          title="TV Shows"
+          mediaType="tv"
+          initialItems={initialTV}
+          genreId={params?.id || ''}
+        />
+      )}
     </div>
   );
 }

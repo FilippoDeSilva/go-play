@@ -1,0 +1,32 @@
+import { NextResponse } from 'next/server';
+
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
+    const url = `${process.env.NEXT_PUBLIC_TMDB_API_URL}/discover/movie?with_genres=${id}&sort_by=popularity.desc&language=en-US`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      next: { revalidate: 3600 } // Cache for 1 hour
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch movies by genre');
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error in /api/genres/[id]/movies:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch movies by genre' },
+      { status: 500 }
+    );
+  }
+}
