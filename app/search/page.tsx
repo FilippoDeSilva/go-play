@@ -1,10 +1,22 @@
-// app/search/page.tsx
-'use client';
+// ✅ app/search/page.tsx
 
 import { Suspense } from 'react';
+
+function Page() {
+  return (
+    <Suspense fallback={<div>Loading search...</div>}>
+      <SearchPageClient />
+    </Suspense>
+  );
+}
+
+export default Page;
+
+// 👇👇 Client Component defined below 👇👇
+'use client';
+
 import { useSearchParams } from 'next/navigation';
 
-// This is the client-side search page component
 function SearchPageClient() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
@@ -24,8 +36,8 @@ function SearchPageClient() {
             <div className="flex items-center justify-between mb-4 px-2">
               <h2 className="text-3xl font-bold text-indigo-400 dark:text-indigo-500 tracking-tight">Movies</h2>
             </div>
-            {/* Your SearchGrid component here */}
-            {/* <SearchGrid query={searchQuery} type="movie" itemsPerPage={18} /> */}
+            {/* Example placeholder — replace with real component */}
+            <div>Movie Results for: {searchQuery}</div>
           </section>
 
           {/* TV Shows Section */}
@@ -33,8 +45,7 @@ function SearchPageClient() {
             <div className="flex items-center justify-between mb-4 px-2">
               <h2 className="text-3xl font-bold text-indigo-400 dark:text-indigo-500 tracking-tight">TV Shows</h2>
             </div>
-            {/* Your SearchGrid component here */}
-            {/* <SearchGrid query={searchQuery} type="tv" itemsPerPage={18} /> */}
+            <div>TV Results for: {searchQuery}</div>
           </section>
         </div>
       ) : (
@@ -43,15 +54,5 @@ function SearchPageClient() {
         </div>
       )}
     </div>
-  );
-}
-
-// The actual page — Server Component
-export default function Page() {
-  return (
-    <Suspense fallback={<div>Loading search...</div>}>
-      {/* This Client Component is defined above, not imported from another file */}
-      <SearchPageClient />
-    </Suspense>
   );
 }
