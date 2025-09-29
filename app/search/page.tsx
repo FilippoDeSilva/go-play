@@ -1,29 +1,55 @@
-import { Suspense } from 'react';
+'use client';
+
+import { Suspense, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import SearchResults from './search-results';
 
-type Props = { 
-  searchParams: { q?: string } 
-};
+function SearchResultsWrapper({ searchQuery }: { searchQuery: string }) {
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-export default function SearchPage({ searchParams }: Props) {
-  const searchQuery = searchParams.q || '';
+  if (!isClient) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  return <SearchResults searchQuery={searchQuery} />;
+}
+
+export default function SearchPage() {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('q') || '';
   
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between px-2">
         <h1 className="text-3xl font-bold text-indigo-400 dark:text-indigo-500 mb-6 tracking-tight">
-          Search results for &quot;{searchQuery}&quot;
+          {searchQuery ? `Search results for "${searchQuery}"` : 'Search'}
         </h1>
       </div>
 
-      <Suspense fallback={
-        <div className="container mx-auto p-6 pt-24 flex justify-center items-center min-h-[50vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      {searchQuery ? (
+        <Suspense 
+          key={searchQuery}
+          fallback={
+            <div className="flex justify-center items-center min-h-[50vh]">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+            </div>
+          }
+        >
+          <SearchResultsWrapper searchQuery={searchQuery} />
+        </Suspense>
+      ) : (
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          Enter a search term to find movies and TV shows
         </div>
-      }>
-        <SearchResults searchQuery={searchQuery} />
-      </Suspense>
+      )}
     </div>
   );
 }
-

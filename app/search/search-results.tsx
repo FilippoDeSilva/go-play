@@ -1,25 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { Suspense } from 'react';
 import InfiniteGrid from '@/components/Search/SearchGrid';
 
 type SearchResultsProps = {
   searchQuery: string;
 };
 
+function LoadingSpinner() {
+  return (
+    <div className="flex justify-center items-center py-12">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+    </div>
+  );
+}
+
 export default function SearchResults({ searchQuery }: SearchResultsProps) {
-  const [loading, setLoading] = useState({
-    movies: true,
-    tv: true
-  });
-
-  const handleLoadComplete = (type: 'movies' | 'tv') => {
-    setLoading(prev => ({
-      ...prev,
-      [type]: false
-    }));
-  };
-
   return (
     <>
       {/* Movies Section */}
@@ -27,13 +23,14 @@ export default function SearchResults({ searchQuery }: SearchResultsProps) {
         <div className="flex items-center justify-between mb-4 px-2">
           <h2 className="text-3xl font-bold text-indigo-400 dark:text-indigo-500 tracking-tight">Movies</h2>
         </div>
-        <InfiniteGrid 
-          query={searchQuery}
-          type="movie"
-          className="mb-8"
-          itemsPerPage={18}
-          onLoadComplete={() => handleLoadComplete('movies')}
-        />
+        <Suspense fallback={<LoadingSpinner />}>
+          <InfiniteGrid 
+            query={searchQuery}
+            type="movie"
+            className="mb-8"
+            itemsPerPage={18}
+          />
+        </Suspense>
       </section>
 
       {/* TV Shows Section */}
@@ -41,12 +38,13 @@ export default function SearchResults({ searchQuery }: SearchResultsProps) {
         <div className="flex items-center justify-between mb-4 px-2">
           <h2 className="text-3xl font-bold text-indigo-400 dark:text-indigo-500 tracking-tight">TV Shows</h2>
         </div>
-        <InfiniteGrid 
-          query={searchQuery}
-          type="tv"
-          itemsPerPage={18}
-          onLoadComplete={() => handleLoadComplete('tv')}
-        />
+        <Suspense fallback={<LoadingSpinner />}>
+          <InfiniteGrid 
+            query={searchQuery}
+            type="tv"
+            itemsPerPage={18}
+          />
+        </Suspense>
       </section>
     </>
   );
